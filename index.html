@@ -1388,6 +1388,17 @@ body.exporting [contenteditable="true"]{outline:none!important;}
 }
 </style>
 
+
+<style id="inline-chat-edit-style">
+#chatText{
+  white-space:pre-wrap;
+  line-height:1.55;
+}
+#cancelChatEditBtn{
+  white-space:nowrap;
+}
+</style>
+
 </head>
 <body>
 <header class="topbar">
@@ -1544,7 +1555,10 @@ body.exporting [contenteditable="true"]{outline:none!important;}
       <div class="chat-maker">
         <div class="f"><label>PROFILE</label><select id="chatSpeaker"><option value="a1">A-01</option><option value="a2">A-02</option><option value="b1">B-01</option><option value="b2">B-02</option></select></div>
         <div class="f wide"><label>MESSAGE</label><textarea id="chatText" placeholder="상대에 대한 생각 / 대사를 입력"></textarea></div>
-        <button class="btn primary add" id="addChatBtn">+ MESSAGE</button>
+        <div class="add" style="display:flex;gap:6px;align-items:stretch">
+          <button class="btn primary" id="addChatBtn" style="flex:1">+ MESSAGE</button>
+          <button class="btn" id="cancelChatEditBtn" style="display:none">CANCEL EDIT</button>
+        </div>
       </div>
       <div class="chat-summary" id="chatSummary"></div>
     </div>
@@ -1895,16 +1909,50 @@ function speakerMeta(id){
   return map[id] || {name:id.toUpperCase(),img:''};
 }
 
-function editMessage(index){
+let editingMessageIndex=null;
+
+function setChatEditMode(index=null){
+  const addBtn=document.getElementById('addChatBtn');
+  const cancelBtn=document.getElementById('cancelChatEditBtn');
+  const speaker=document.getElementById('chatSpeaker');
+  const text=document.getElementById('chatText');
+
+  editingMessageIndex=index;
+
+  if(index===null){
+    addBtn.textContent='+ MESSAGE';
+    cancelBtn.style.display='none';
+    text.value='';
+    return;
+  }
+
   const msg=state.messages[index];
-  if(!msg) return;
-  const next=prompt('메시지 내용을 수정하세요.', msg.text);
-  if(next===null) return;
-  const text=next.trim();
-  if(!text) return;
-  state.messages[index].text=text;
-  renderChat();
-  notify('MESSAGE UPDATED');
+  if(!msg){
+    editingMessageIndex=null;
+    addBtn.textContent='+ MESSAGE';
+    cancelBtn.style.display='none';
+    return;
+  }
+
+  speaker.value=msg.speaker;
+  text.value=msg.text;
+  addBtn.textContent='SAVE EDIT';
+  cancelBtn.style.display='inline-flex';
+
+  // Open CHAT tab if another editor tab is active.
+  const chatTab=document.querySelector('[data-tab="panelChat"]');
+  if(chatTab && !chatTab.classList.contains('active')) chatTab.click();
+
+  // Bring the same textarea used for adding messages into view.
+  text.scrollIntoView({behavior:'smooth',block:'center'});
+  setTimeout(()=>{
+    text.focus();
+    text.setSelectionRange(text.value.length,text.value.length);
+  },180);
+}
+
+function editMessage(index){
+  setChatEditMode(index);
 }
 
 function renderChat(){
@@ -1920,7 +1968,12 @@ function renderChat(){
     const up=document.createElement('button'); up.textContent='↑'; up.onclick=()=>moveMessage(index,-1);
     const down=document.createElement('button'); down.textContent='↓'; down.onclick=()=>moveMessage(index,1);
     const edit=document.createElement('button'); edit.textContent='EDIT'; edit.onclick=()=>editMessage(index);
-    const del=document.createElement('button'); del.textContent='DEL'; del.onclick=()=>{ state.messages.splice(index,1); renderChat(); };
+    const del=document.createElement('button'); del.textContent='DEL'; del.onclick=()=>{
+      state.messages.splice(index,1);
+      if(editingMessageIndex===index) setChatEditMode(null);
+      else if(editingMessageIndex!==null && editingMessageIndex>index) editingMessageIndex--;
+      renderChat();
+    };
     ctr.append(up,down,edit,del); wrap.appendChild(ctr); row.append(avatar,wrap); list.appendChild(row);
   });
   renderChatSummary();
@@ -1931,15 +1984,55 @@ function renderChatSummary(){
     const meta=speakerMeta(msg.speaker); const row=document.createElement('div'); row.className='chat-summary-row';
     const autoSide=String(msg.speaker).startsWith('b')?'RIGHT':'LEFT'; row.innerHTML=`<span>${escapeHtml(meta.name)}</span><span>${autoSide}</span><span>${escapeHtml(msg.text.slice(0,90))}</span>`;
     const edit=document.createElement('button'); edit.textContent='EDIT'; edit.onclick=()=>editMessage(index);
-    const del=document.createElement('button'); del.textContent='DEL'; del.onclick=()=>{ state.messages.splice(index,1); renderChat(); };
+    const del=document.createElement('button'); del.textContent='DEL'; del.onclick=()=>{
+      state.messages.splice(index,1);
+      if(editingMessageIndex===index) setChatEditMode(null);
+      else if(editingMessageIndex!==null && editingMessageIndex>index) editingMessageIndex--;
+      renderChat();
+    };
     row.append(edit,del); box.appendChild(row);
   });
 }
-function moveMessage(index,delta){ const next=index+delta; if(next<0||next>=state.messages.length) return; [state.messages[index],state.messages[next]]=[state.messages[next],state.messages[index]]; renderChat(); }
+function moveMessage(index,delta){
+  const next=index+delta;
+  if(next<0||next>=state.messages.length) return;
+  [state.messages[index],state.messages[next]]=[state.messages[next],state.messages[index]];
+  if(editingMessageIndex===index) editingMessageIndex=next;
+  else if(editingMessageIndex===next) editingMessageIndex=index;
+  renderChat();
+}
 document.getElementById('addChatBtn').addEventListener('click',()=>{
-  const text=document.getElementById('chatText').value.trim(); if(!text) return;
-  const speaker=document.getElementById('chatSpeaker').value; state.messages.push({speaker, side:String(speaker).startsWith('b')?'right':'left', text});
-  document.getElementById('chatText').value=''; renderChat();
+  const textEl=document.getElementById('chatText');
+  const raw=textEl.value;
+  if(!raw.trim()) return;
+
+  const speaker=document.getElementById('chatSpeaker').value;
+
+  if(editingMessageIndex!==null && state.messages[editingMessageIndex]){
+    state.messages[editingMessageIndex]={
+      ...state.messages[editingMessageIndex],
+      speaker,
+      side:String(speaker).startsWith('b')?'right':'left',
+      text:raw.trim()
+    };
+    renderChat();
+    setChatEditMode(null);
+    notify('MESSAGE UPDATED');
+    return;
+  }
+
+  state.messages.push({
+    speaker,
+    side:String(speaker).startsWith('b')?'right':'left',
+    text:raw.trim()
+  });
+  textEl.value='';
+  renderChat();
+});
+
+document.getElementById('cancelChatEditBtn').addEventListener('click',()=>{
+  setChatEditMode(null);
+  notify('EDIT CANCELED');
 });
 renderChat();
 renderVerdicts();
