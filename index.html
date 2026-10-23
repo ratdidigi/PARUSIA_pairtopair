@@ -1244,6 +1244,150 @@ body.exporting [contenteditable="true"]{outline:none!important;}
 }
 </style>
 
+
+<style id="safe-zones-compact-verdict-final">
+/* =========================================================
+   HERO HEADER — move title/catchphrase up near the frame top
+   ========================================================= */
+.pair-title{
+  top:20px!important;
+}
+.pair-quote{
+  top:76px!important;
+  line-height:1.35!important;
+}
+
+/* Header image controls stay top-center and clickable above gradient */
+.side-a .hero-image > .slot-tools,
+.side-b .hero-image > .slot-tools{
+  left:50%!important;
+  right:auto!important;
+  top:4px!important;
+  transform:translateX(-50%)!important;
+  z-index:30!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+
+/* =========================================================
+   PROFILE SAFE ZONES
+   Long copy stays inside the side area and never reaches
+   the center message/verdict zone.
+   ========================================================= */
+.profile-grid{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:34px!important;
+}
+.profile{
+  min-width:0!important;
+}
+
+/* pull inner profiles slightly outward to create center breathing room */
+.side-a .profile-grid > .profile:nth-child(2){
+  left:-64px!important;
+}
+.side-b .profile-grid > .profile:nth-child(1){
+  left:64px!important;
+}
+
+.line-bubble,
+.profile-desc{
+  width:auto!important;
+  max-width:205px!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+}
+.profile-desc{
+  white-space:pre-wrap!important;
+  line-height:1.62!important;
+}
+
+/* A wraps outward/left; B wraps outward/right */
+.side-a .profile-grid > .profile .line-bubble,
+.side-a .profile-grid > .profile .profile-desc{
+  margin-left:0!important;
+  margin-right:auto!important;
+}
+.side-b .profile-grid > .profile .line-bubble,
+.side-b .profile-grid > .profile .profile-desc{
+  margin-left:auto!important;
+  margin-right:0!important;
+}
+
+/* =========================================================
+   CROSS MESSAGE SAFE ZONE
+   Wide enough to use the central field, but not so wide that
+   it touches profile copy on either side.
+   ========================================================= */
+.chat-list{
+  width:720px!important;
+  max-width:none!important;
+  margin-left:-160px!important;
+  margin-right:0!important;
+  padding:24px 26px 18px!important;
+  box-sizing:border-box!important;
+  overflow:visible!important;
+  align-self:flex-start!important;
+}
+.chat-list .msg{
+  width:100%!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+}
+.chat-list .msg.left{
+  justify-content:flex-start!important;
+}
+.chat-list .msg.right{
+  justify-content:flex-start!important;
+  flex-direction:row-reverse!important;
+}
+.chat-list .bubble{
+  max-width:320px!important;
+  width:fit-content!important;
+  box-sizing:border-box!important;
+  white-space:pre-wrap!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+}
+
+/* =========================================================
+   VERDICT — reduce unnecessary horizontal span and keep it
+   separated from side profile copy and message avatars.
+   ========================================================= */
+.chat-verdict{
+  width:620px!important;
+  max-width:none!important;
+  margin:auto 0 10px -110px!important;
+}
+.chat-verdict-grid{
+  display:grid!important;
+  grid-template-columns:310px 310px!important;
+  column-gap:0!important;
+  row-gap:18px!important;
+  justify-content:start!important;
+  align-items:stretch!important;
+}
+.chat-verdict-card{
+  min-width:0!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+  left:0!important;
+  transform:none!important;
+}
+.chat-verdict-copy{
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+}
+
+/* Keep the compact verdict block visually separate */
+.chat-verdict-head{
+  margin-bottom:12px!important;
+}
+</style>
+
 </head>
 <body>
 <header class="topbar">
