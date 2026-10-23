@@ -1744,7 +1744,7 @@ async function copyProfileTemplate(){
 
 document.getElementById('profileCopyBtn').addEventListener('click',copyProfileTemplate);
 
-const OOC_TEMPLATE="[OOC: 이전 롤플레잉 중지. AI가 직접 답변한다.\n이전 대화, 캐릭터 설정, 로어북, 관계 및 사건 기록을 참고하여 NPC와 PC의 관계를 아래 양식에 맞춰 작성한다. 필요한 경우 {{char}}와 {{user}}의 생각·평가를 관계와 성격에 맞게 자연스럽게 추론하여 작성해도 된다.\nchar_1 프로필\n이름(코드네임): \n성별: \n나이: \n소속: \n외형: \n기타:\nchar_2 프로필\n이름(코드네임): \n성별: \n나이: \n소속: \n외형: \n기타:\nchar_1와 char_2의 관계: \nRELATIONSHIP VERDICT\n{{char}}가 생각하는 두 사람의 관계에 대한 평가문:\n• 짧은 1~3문장\n• {{char}}의 성격과 관점이 드러나도록 작성\n{{char}}의 관계 판정: DANGEROUS / STABLE / UNDEFINED 중 하나 선택\n{{user}}가 생각하는 두 사람의 관계에 대한 평가문:\n• 짧은 1~3문장\n• {{user}}의 성격과 관점이 드러나도록 작성\n{{user}}의 관계 판정: DANGEROUS / STABLE / UNDEFINED 중 하나 선택\nCROSS MESSAGE\n{{char}}와 {{user}}가 char_1, char_2 또는 두 사람의 관계를 보며 나누는 짧은 대화 1~3개. 자연스러운 구어체로 작성하며 각 대사 앞에 화자를 표시한다.\n{{char}}: {{user}}: …]";
+const OOC_TEMPLATE="[OOC: 이전 롤플레잉 중지. AI가 직접 답변한다.\n이전 대화, 캐릭터 설정, 로어북, 관계 및 사건 기록을 참고하여 NPC와 PC의 관계를 아래 양식에 맞춰 작성한다. 필요한 경우 {{char}}와 {{user}}의 생각·평가를 관계와 성격에 맞게 자연스럽게 추론하여 작성해도 된다.\nchar_1 프로필\n이름(코드네임): \n성별: \n나이: \n국적: \n소속: \n외형: \n기타:\nchar_2 프로필\n이름(코드네임): \n성별: \n나이: \n국적: \n소속: \n외형: \n기타:\nchar_1와 char_2의 관계: \nRELATIONSHIP VERDICT\n{{char}}가 생각하는 두 사람의 관계에 대한 평가문:\n• 짧은 1~3문장\n• {{char}}의 성격과 관점이 드러나도록 작성\n{{char}}의 관계 판정: DANGEROUS / STABLE / UNDEFINED 중 하나 선택\n{{user}}가 생각하는 두 사람의 관계에 대한 평가문:\n• 짧은 1~3문장\n• {{user}}의 성격과 관점이 드러나도록 작성\n{{user}}의 관계 판정: DANGEROUS / STABLE / UNDEFINED 중 하나 선택\nCROSS MESSAGE\n{{char}}와 {{user}}가 char_1, char_2 또는 두 사람의 관계를 보며 나누는 짧은 대화 1~3개. 자연스러운 구어체로 작성하며 각 대사 앞에 화자를 표시한다.\n{{char}}: {{user}}: …]";
 
 async function copyOOC(){
   try{
