@@ -85,10 +85,6 @@ button{cursor:pointer}
   repeating-linear-gradient(45deg,transparent 0 16px,rgba(255,255,255,.012) 16px 17px);
 }
 .slot-tools{position:absolute;left:10px;top:10px;z-index:8;display:flex;gap:5px;opacity:0;transition:.2s}
-.side-b .hero-image .slot-tools{
-  left:auto;
-  right:10px;
-}
 .image-slot:hover .slot-tools,.image-slot:focus-within .slot-tools{opacity:1}
 .mini-btn{border:1px solid rgba(232,216,181,.22);background:rgba(7,7,7,.84);color:#cfbf9f;padding:5px 7px;font:600 8px var(--mono)}
 .hero-image:after{
@@ -1102,6 +1098,26 @@ body.exporting [contenteditable="true"]{outline:none!important;}
 }
 </style>
 
+
+<style id="pair-b-tools-quote-chat-edit-fix">
+/* Pair B image controls on the right */
+.side-b .slot-tools{
+  left:auto!important;
+  right:10px!important;
+}
+
+/* Make pair catchphrase readable even over bright/busy header images */
+.pair-quote{
+  color:#d7c7aa!important;
+  text-shadow:
+    0 2px 2px rgba(0,0,0,.98),
+    0 0 5px rgba(0,0,0,.98),
+    0 0 10px rgba(0,0,0,.95),
+    0 3px 18px rgba(0,0,0,1)!important;
+  font-weight:600!important;
+}
+</style>
+
 </head>
 <body>
 <header class="topbar">
@@ -1608,6 +1624,19 @@ function speakerMeta(id){
   const map={a1:{name:state.text.a1Name,img:state.images.a1Image.src},a2:{name:state.text.a2Name,img:state.images.a2Image.src},b1:{name:state.text.b1Name,img:state.images.b1Image.src},b2:{name:state.text.b2Name,img:state.images.b2Image.src}};
   return map[id] || {name:id.toUpperCase(),img:''};
 }
+
+function editMessage(index){
+  const msg=state.messages[index];
+  if(!msg) return;
+  const next=prompt('메시지 내용을 수정하세요.', msg.text);
+  if(next===null) return;
+  const text=next.trim();
+  if(!text) return;
+  state.messages[index].text=text;
+  renderChat();
+  notify('MESSAGE UPDATED');
+}
+
 function renderChat(){
   const list=document.getElementById('chatList'); list.innerHTML='';
   state.messages.forEach((msg,index)=>{
@@ -1620,8 +1649,9 @@ function renderChat(){
     const ctr=document.createElement('div'); ctr.className='msg-controls';
     const up=document.createElement('button'); up.textContent='↑'; up.onclick=()=>moveMessage(index,-1);
     const down=document.createElement('button'); down.textContent='↓'; down.onclick=()=>moveMessage(index,1);
+    const edit=document.createElement('button'); edit.textContent='EDIT'; edit.onclick=()=>editMessage(index);
     const del=document.createElement('button'); del.textContent='DEL'; del.onclick=()=>{ state.messages.splice(index,1); renderChat(); };
-    ctr.append(up,down,del); wrap.appendChild(ctr); row.append(avatar,wrap); list.appendChild(row);
+    ctr.append(up,down,edit,del); wrap.appendChild(ctr); row.append(avatar,wrap); list.appendChild(row);
   });
   renderChatSummary();
 }
@@ -1630,8 +1660,9 @@ function renderChatSummary(){
   state.messages.forEach((msg,index)=>{
     const meta=speakerMeta(msg.speaker); const row=document.createElement('div'); row.className='chat-summary-row';
     const autoSide=String(msg.speaker).startsWith('b')?'RIGHT':'LEFT'; row.innerHTML=`<span>${escapeHtml(meta.name)}</span><span>${autoSide}</span><span>${escapeHtml(msg.text.slice(0,90))}</span>`;
+    const edit=document.createElement('button'); edit.textContent='EDIT'; edit.onclick=()=>editMessage(index);
     const del=document.createElement('button'); del.textContent='DEL'; del.onclick=()=>{ state.messages.splice(index,1); renderChat(); };
-    row.appendChild(del); box.appendChild(row);
+    row.append(edit,del); box.appendChild(row);
   });
 }
 function moveMessage(index,delta){ const next=index+delta; if(next<0||next>=state.messages.length) return; [state.messages[index],state.messages[next]]=[state.messages[next],state.messages[index]]; renderChat(); }
@@ -1713,7 +1744,7 @@ async function copyProfileTemplate(){
 
 document.getElementById('profileCopyBtn').addEventListener('click',copyProfileTemplate);
 
-const OOC_TEMPLATE="[OOC: 이전 롤플레잉 중지. AI가 직접 답변한다.\n이전 대화, 캐릭터 설정, 로어북, 관계 및 사건 기록을 참고하여 NPC와 PC의 관계를 아래 양식에 맞춰 작성한다. 필요한 경우 {{char}}와 {{user}}의 생각·평가를 관계와 성격에 맞게 자연스럽게 추론하여 작성해도 된다.\nchar_1 프로필\n이름(코드네임): \n성별: \n나이: \n소속: \n외형: \n기타:\nchar_2 프로필\n이름(코드네임): \n성별: \n나이: \n소속: \n외형: \n기타:\nchar_1과 char_2의 관계: \nRELATIONSHIP VERDICT\n{{char}}가 생각하는 두 사람의 관계에 대한 평가문:\n• 짧은 1~3문장\n• {{char}}의 성격과 관점이 드러나도록 작성\n{{char}}의 관계 판정: DANGEROUS / STABLE / UNDEFINED 중 하나 선택\n{{user}}가 생각하는 두 사람의 관계에 대한 평가문:\n• 짧은 1~3문장\n• {{user}}의 성격과 관점이 드러나도록 작성\n{{user}}의 관계 판정: DANGEROUS / STABLE / UNDEFINED 중 하나 선택\nCROSS MESSAGE\n{{char}}와 {{user}}가 char_1, char_2 또는 두 사람의 관계를 보며 나누는 짧은 대화 1~3개. 자연스러운 구어체로 작성하며 각 대사 앞에 화자를 표시한다.\n{{char}}: {{user}}: …]";
+const OOC_TEMPLATE="[OOC: 이전 롤플레잉 중지. AI가 직접 답변한다.\n이전 대화, 캐릭터 설정, 로어북, 관계 및 사건 기록을 참고하여 NPC와 PC의 관계를 아래 양식에 맞춰 작성한다. 필요한 경우 {{char}}와 {{user}}의 생각·평가를 관계와 성격에 맞게 자연스럽게 추론하여 작성해도 된다.\nchar_1 프로필\n이름(코드네임): \n성별: \n나이: \n소속: \n외형: \n기타:\nchar_2 프로필\n이름(코드네임): \n성별: \n나이: \n소속: \n외형: \n기타:\nchar_1와 char_2의 관계: \nRELATIONSHIP VERDICT\n{{char}}가 생각하는 두 사람의 관계에 대한 평가문:\n• 짧은 1~3문장\n• {{char}}의 성격과 관점이 드러나도록 작성\n{{char}}의 관계 판정: DANGEROUS / STABLE / UNDEFINED 중 하나 선택\n{{user}}가 생각하는 두 사람의 관계에 대한 평가문:\n• 짧은 1~3문장\n• {{user}}의 성격과 관점이 드러나도록 작성\n{{user}}의 관계 판정: DANGEROUS / STABLE / UNDEFINED 중 하나 선택\nCROSS MESSAGE\n{{char}}와 {{user}}가 char_1, char_2 또는 두 사람의 관계를 보며 나누는 짧은 대화 1~3개. 자연스러운 구어체로 작성하며 각 대사 앞에 화자를 표시한다.\n{{char}}: {{user}}: …]";
 
 async function copyOOC(){
   try{
