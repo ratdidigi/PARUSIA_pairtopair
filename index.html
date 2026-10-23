@@ -764,6 +764,340 @@ body.exporting [contenteditable="true"]{
 }
 </style>
 
+
+<style id="export-exact-preview-style">
+body.exporting .slot-tools{
+  visibility:hidden!important;
+}
+body.exporting .msg-controls{
+  visibility:hidden!important;
+}
+body.exporting [contenteditable="true"]{
+  outline:none!important;
+}
+</style>
+
+
+<style id="pair-b-bubble-fix">
+/* Robust speech bubbles for profile one-liners.
+   Pair A tail on left / Pair B tail on right.
+   No clip-path so html2canvas/export stays stable. */
+.line-bubble{
+  position:relative!important;
+  overflow:visible!important;
+  border-radius:18px 18px 18px 6px!important;
+}
+.line-bubble:after{
+  content:""!important;
+  position:absolute!important;
+  left:16px!important;
+  right:auto!important;
+  bottom:-9px!important;
+  width:0!important;
+  height:0!important;
+  border-style:solid!important;
+  border-width:10px 10px 0 0!important;
+  border-color:#e5d6b8 transparent transparent transparent!important;
+  background:transparent!important;
+  clip-path:none!important;
+  filter:drop-shadow(0 2px 2px rgba(0,0,0,.12))!important;
+  transform:none!important;
+}
+
+/* Pair B is the true mirror version */
+.side-b .line-bubble{
+  border-radius:18px 18px 6px 18px!important;
+  text-align:right!important;
+}
+.side-b .line-bubble:after{
+  left:auto!important;
+  right:16px!important;
+  bottom:-9px!important;
+  width:0!important;
+  height:0!important;
+  border-style:solid!important;
+  border-width:10px 0 0 10px!important;
+  border-color:#e5d6b8 transparent transparent transparent!important;
+  background:transparent!important;
+  clip-path:none!important;
+  transform:none!important;
+}
+
+/* Make sure parent containers never crop the speech tail */
+.profile,
+.profile-grid,
+.side-b .profile,
+.side-a .profile{
+  overflow:visible!important;
+}
+</style>
+
+
+<style id="export-wrapper-capture-fix">
+body.exporting .slot-tools,
+body.exporting .msg-controls{visibility:hidden!important;}
+body.exporting [contenteditable="true"]{outline:none!important;}
+</style>
+
+
+<style id="form-only-preview-style">
+/* Preview is display-only. All editing happens in the lower tabs. */
+[data-bind],
+.profile-desc,
+.line-bubble,
+.pair-title,
+.pair-quote,
+[data-verdict-copy]{
+  pointer-events:none!important;
+  user-select:none!important;
+  cursor:default!important;
+  outline:none!important;
+  caret-color:transparent!important;
+}
+
+/* More deterministic text layout for html2canvas. */
+.profile-name,
+.profile-desc,
+.line-bubble,
+.pair-title,
+.pair-quote,
+.chat-verdict-name,
+.chat-verdict-copy{
+  text-rendering:geometricPrecision;
+  -webkit-font-smoothing:antialiased;
+  font-kerning:normal;
+}
+
+/* Prevent accidental selection/highlight changing export geometry. */
+.pair-board *::selection{
+  background:transparent;
+}
+</style>
+
+
+<style id="no-translate-layout-fix">
+/* html2canvas is unreliable with nested translateX positioning.
+   Keep the exact intended layout using normal relative positioning instead. */
+
+/* Center column is 400px wide; 760px verdict should extend 180px on each side. */
+.chat-verdict{
+  left:auto!important;
+  transform:none!important;
+  margin:auto 0 8px -180px!important;
+  width:760px!important;
+  max-width:none!important;
+}
+
+/* Inner verdict cards: same visual offsets, no transform. */
+.chat-verdict-card[data-verdict-card="a2"]{
+  transform:none!important;
+  position:relative!important;
+  left:-52px!important;
+}
+.chat-verdict-card[data-verdict-card="b1"]{
+  transform:none!important;
+  position:relative!important;
+  left:52px!important;
+}
+
+/* Inner profiles: keep A01/B02 fixed, move only A02/B01 outward. */
+.side-a .profile-grid > .profile:nth-child(2){
+  transform:none!important;
+  position:relative!important;
+  left:-88px!important;
+}
+.side-b .profile-grid > .profile:nth-child(1){
+  transform:none!important;
+  position:relative!important;
+  left:88px!important;
+}
+</style>
+
+
+<style id="center-tighter-safe-text-fix">
+/* Pull the middle content closer together again, but keep export-safe positioning. */
+.chat-verdict-card[data-verdict-card="a2"]{
+  left:-14px!important;
+}
+.chat-verdict-card[data-verdict-card="b1"]{
+  left:14px!important;
+}
+.side-a .profile-grid > .profile:nth-child(2){
+  left:-24px!important;
+}
+.side-b .profile-grid > .profile:nth-child(1){
+  left:24px!important;
+}
+
+/* Give each profile a firmer content box so long text doesn't invade the neighbor. */
+.profile-grid{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  align-items:start!important;
+  gap:16px!important;
+}
+.profile{
+  min-width:0!important;
+}
+.profile-name,
+.profile-label,
+.keyword-chips,
+.line-bubble,
+.profile-desc{
+  max-width:100%!important;
+}
+.line-bubble{
+  display:block!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+}
+.profile-desc{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  white-space:pre-wrap!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+  padding-right:4px!important;
+}
+</style>
+
+
+<style id="verdict-flush-safe-bubbles-final">
+/* VERDICT: truly attached 2x2 document block, no gutters. */
+.chat-verdict{
+  width:760px!important;
+  max-width:none!important;
+  margin:auto 0 8px -180px!important;
+}
+.chat-verdict-grid{
+  display:grid!important;
+  grid-template-columns:380px 380px!important;
+  grid-auto-rows:auto!important;
+  gap:0!important;
+  justify-content:start!important;
+  align-items:stretch!important;
+}
+.chat-verdict-card{
+  margin:0!important;
+  position:relative!important;
+  left:0!important;
+  transform:none!important;
+  border-radius:0!important;
+}
+/* collapse shared borders so the four cards read as one form */
+.chat-verdict-card:nth-child(2),
+.chat-verdict-card:nth-child(4){
+  margin-left:-1px!important;
+}
+.chat-verdict-card:nth-child(3),
+.chat-verdict-card:nth-child(4){
+  margin-top:-1px!important;
+}
+
+/* Profile text must never invade the neighboring profile. */
+.profile{
+  min-width:0!important;
+  overflow:visible!important;
+}
+.line-bubble{
+  display:inline-block!important;
+  width:auto!important;
+  max-width:260px!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+  line-height:1.55!important;
+}
+.profile-desc{
+  display:block!important;
+  width:auto!important;
+  max-width:260px!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  white-space:pre-wrap!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+}
+/* Right-side profiles remain right-aligned while wrapping inward. */
+.side-b .profile{
+  text-align:right!important;
+}
+.side-b .line-bubble,
+.side-b .profile-desc{
+  margin-left:auto!important;
+  margin-right:0!important;
+}
+</style>
+
+
+<style id="verdict-row-gap-and-profile-safe-final">
+/* VERDICT: cards touch horizontally only. Rows remain visibly separated. */
+.chat-verdict-grid{
+  column-gap:0!important;
+  row-gap:18px!important;
+}
+.chat-verdict-card:nth-child(2),
+.chat-verdict-card:nth-child(4){
+  margin-left:-1px!important;
+}
+.chat-verdict-card:nth-child(3),
+.chat-verdict-card:nth-child(4){
+  margin-top:0!important;
+}
+
+/* Keep profile copy inside its own half and away from the center verdict. */
+.line-bubble{
+  width:auto!important;
+  max-width:220px!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+}
+.profile-desc{
+  width:auto!important;
+  max-width:220px!important;
+  white-space:pre-wrap!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+  line-height:1.62!important;
+}
+
+/* Inner profiles wrap outward, never toward the center. */
+.side-a .profile-grid > .profile:nth-child(1) .line-bubble,
+.side-a .profile-grid > .profile:nth-child(1) .profile-desc,
+.side-a .profile-grid > .profile:nth-child(2) .line-bubble,
+.side-a .profile-grid > .profile:nth-child(2) .profile-desc{
+  margin-left:0!important;
+  margin-right:auto!important;
+}
+.side-b .profile-grid > .profile:nth-child(1) .line-bubble,
+.side-b .profile-grid > .profile:nth-child(1) .profile-desc,
+.side-b .profile-grid > .profile:nth-child(2) .line-bubble,
+.side-b .profile-grid > .profile:nth-child(2) .profile-desc{
+  margin-left:auto!important;
+  margin-right:0!important;
+}
+</style>
+
+
+<style id="profile-area-balanced-spread">
+/* Move the INNER profile areas outward while keeping A01/B02 fixed. */
+.side-a .profile-grid > .profile:nth-child(2){
+  position:relative!important;
+  left:-112px!important;
+}
+.side-b .profile-grid > .profile:nth-child(1){
+  position:relative!important;
+  left:112px!important;
+}
+</style>
+
 </head>
 <body>
 <header class="topbar">
@@ -772,6 +1106,7 @@ body.exporting [contenteditable="true"]{
   <div class="top-actions">
     <button class="btn" id="loadBtn">LOAD</button>
     <button class="btn" id="saveBtn">SAVE</button>
+    <button class="btn" id="profileCopyBtn">PROFILE COPY</button>
     <button class="btn" id="oocCopyBtn">OOC COPY</button>
     <button class="btn primary" id="exportBtn">EXPORT PNG</button>
     <button class="btn danger" id="resetBtn">RESET</button>
@@ -787,8 +1122,8 @@ body.exporting [contenteditable="true"]{
             <img alt="">
             <div class="slot-tools"><button class="mini-btn upload-trigger" data-slot="aHero">UPLOAD</button><button class="mini-btn reset-image" data-slot="aHero">RESET</button></div>
             <div class="hero-head hero-head-a"><span class="pair-no">01</span></div>
-            <div class="pair-title" contenteditable="true" data-bind="aPairTitle">PAIR A</div>
-            <div class="pair-quote" contenteditable="true" data-bind="aPairQuote">“두 사람을 설명하는 한 문장.”</div>
+            <div class="pair-title" data-bind="aPairTitle">PAIR A</div>
+            <div class="pair-quote" data-bind="aPairQuote">“두 사람을 설명하는 한 문장.”</div>
           </div>
           <div class="portrait-band">
               <div class="portrait-card"><div class="image-slot empty" data-slot="a1Image"><img alt=""><div class="slot-tools"><button class="mini-btn upload-trigger" data-slot="a1Image">UPLOAD</button><button class="mini-btn reset-image" data-slot="a1Image">RESET</button></div></div></div>
@@ -797,16 +1132,16 @@ body.exporting [contenteditable="true"]{
 
           <div class="profile-grid">
             <article class="profile">
-              <div class="profile-name" contenteditable="true" data-bind="a1Name">A-01</div>
+              <div class="profile-name" data-bind="a1Name">A-01</div>
               <div class="keyword-chips" data-keywords-view="a1Keywords"></div>
-              <div class="line-bubble" contenteditable="true" data-bind="a1Line">한 줄 대사를 입력하세요.</div>
-              <div class="profile-desc" contenteditable="true" data-bind="a1Desc">캐릭터 설명을 입력하세요.</div>
+              <div class="line-bubble" data-bind="a1Line">한 줄 대사를 입력하세요.</div>
+              <div class="profile-desc" data-bind="a1Desc">캐릭터 설명을 입력하세요.</div>
             </article>
             <article class="profile">
-              <div class="profile-name" contenteditable="true" data-bind="a2Name">A-02</div>
+              <div class="profile-name" data-bind="a2Name">A-02</div>
               <div class="keyword-chips" data-keywords-view="a2Keywords"></div>
-              <div class="line-bubble" contenteditable="true" data-bind="a2Line">한 줄 대사를 입력하세요.</div>
-              <div class="profile-desc" contenteditable="true" data-bind="a2Desc">캐릭터 설명을 입력하세요.</div>
+              <div class="line-bubble" data-bind="a2Line">한 줄 대사를 입력하세요.</div>
+              <div class="profile-desc" data-bind="a2Desc">캐릭터 설명을 입력하세요.</div>
             </article>
           </div>
         </section>
@@ -852,8 +1187,8 @@ body.exporting [contenteditable="true"]{
             <img alt="">
             <div class="slot-tools"><button class="mini-btn upload-trigger" data-slot="bHero">UPLOAD</button><button class="mini-btn reset-image" data-slot="bHero">RESET</button></div>
             <div class="hero-head hero-head-b"><span class="pair-no">02</span></div>
-            <div class="pair-title" contenteditable="true" data-bind="bPairTitle">PAIR B</div>
-            <div class="pair-quote" contenteditable="true" data-bind="bPairQuote">“두 사람을 설명하는 한 문장.”</div>
+            <div class="pair-title" data-bind="bPairTitle">PAIR B</div>
+            <div class="pair-quote" data-bind="bPairQuote">“두 사람을 설명하는 한 문장.”</div>
           </div>
           <div class="portrait-band">
               <div class="portrait-card"><div class="image-slot empty" data-slot="b1Image"><img alt=""><div class="slot-tools"><button class="mini-btn upload-trigger" data-slot="b1Image">UPLOAD</button><button class="mini-btn reset-image" data-slot="b1Image">RESET</button></div></div></div>
@@ -862,16 +1197,16 @@ body.exporting [contenteditable="true"]{
 
           <div class="profile-grid">
             <article class="profile">
-              <div class="profile-name" contenteditable="true" data-bind="b1Name">B-01</div>
+              <div class="profile-name" data-bind="b1Name">B-01</div>
               <div class="keyword-chips" data-keywords-view="b1Keywords"></div>
-              <div class="line-bubble" contenteditable="true" data-bind="b1Line">한 줄 대사를 입력하세요.</div>
-              <div class="profile-desc" contenteditable="true" data-bind="b1Desc">캐릭터 설명을 입력하세요.</div>
+              <div class="line-bubble" data-bind="b1Line">한 줄 대사를 입력하세요.</div>
+              <div class="profile-desc" data-bind="b1Desc">캐릭터 설명을 입력하세요.</div>
             </article>
             <article class="profile">
-              <div class="profile-name" contenteditable="true" data-bind="b2Name">B-02</div>
+              <div class="profile-name" data-bind="b2Name">B-02</div>
               <div class="keyword-chips" data-keywords-view="b2Keywords"></div>
-              <div class="line-bubble" contenteditable="true" data-bind="b2Line">한 줄 대사를 입력하세요.</div>
-              <div class="profile-desc" contenteditable="true" data-bind="b2Desc">캐릭터 설명을 입력하세요.</div>
+              <div class="line-bubble" data-bind="b2Line">한 줄 대사를 입력하세요.</div>
+              <div class="profile-desc" data-bind="b2Desc">캐릭터 설명을 입력하세요.</div>
             </article>
           </div>
         </section>
@@ -1072,16 +1407,12 @@ window.addEventListener('orientationchange',()=>setTimeout(resizePreview,80));
 setTimeout(resizePreview,50);
 
 function bindText(){
+  // Preview is read-only: state is edited only through form controls below.
   document.querySelectorAll('[data-bind]').forEach(el=>{
     const key=el.dataset.bind;
     el.textContent=state.text[key] ?? el.textContent;
-    el.addEventListener('input',()=>{
-      state.text[key]=el.textContent;
-      document.querySelectorAll(`[data-input="${key}"]`).forEach(input=>{ if(document.activeElement!==input) input.value=state.text[key]; });
-      renderChat();
-      renderVerdicts();
-    });
   });
+
   document.querySelectorAll('[data-input]').forEach(input=>{
     const key=input.dataset.input;
     input.value=state.text[key] ?? '';
@@ -1090,7 +1421,7 @@ function bindText(){
       const bound=document.querySelector(`[data-bind="${key}"]`);
       if(bound) bound.textContent=input.value;
       renderChat();
-      renderVerdicts();
+      if(typeof renderVerdicts==='function') renderVerdicts();
     });
   });
 }
@@ -1309,7 +1640,6 @@ renderChat();
 renderVerdicts();
 
 function snapshot(){
-  document.querySelectorAll('[data-bind]').forEach(el=>state.text[el.dataset.bind]=el.textContent);
   return JSON.parse(JSON.stringify(state));
 }
 function applySnapshot(data){
@@ -1349,7 +1679,37 @@ document.getElementById('loadBtn').onclick=()=>loadProject().catch(e=>{ console.
 document.getElementById('resetBtn').onclick=()=>{ if(confirm('현재 편집 내용을 초기화할까요?')) location.reload(); };
 
 
-const OOC_TEMPLATE="[OOC: 이전 롤플레잉 중지. AI가 직접 답변한다.\n이전 대화, 캐릭터 설정, 로어북, 관계 및 사건 기록을 참고하여 NPC와 PC의 관계를 아래 양식에 맞춰 작성한다. 필요한 경우 {{char}}와 {{user}}의 생각·평가를 관계와 성격에 맞게 자연스럽게 추론하여 작성해도 된다.\nchar_1 프로필\n이름(코드네임): \n성별: \n나이: \n소속: \n외형: \n기타:\nchar_2 프로필\n이름(코드네임): \n성별: \n나이: \n소속: \n외형: \n기타:\nRELATIONSHIP VERDICT\n{{char}}가 생각하는 두 사람의 관계에 대한 평가문:\n• 짧은 1~3문장\n• {{char}}의 성격과 관점이 드러나도록 작성\n{{char}}의 관계 판정: DANGEROUS / STABLE / UNDEFINED 중 하나 선택\n{{user}}가 생각하는 두 사람의 관계에 대한 평가문:\n• 짧은 1~3문장\n• {{user}}의 성격과 관점이 드러나도록 작성\n{{user}}의 관계 판정: DANGEROUS / STABLE / UNDEFINED 중 하나 선택\nCROSS MESSAGE\n{{char}}와 {{user}}가 char_1, char_2 또는 두 사람의 관계를 보며 나누는 짧은 대화 1~3개. 자연스러운 구어체로 작성하며 각 대사 앞에 화자를 표시한다.\n{{char}}: {{user}}: …]";
+
+const PROFILE_TEMPLATE="페어 이름:\n페어 캐치프레이즈:\n\n[캐릭터(01) 프로필]\n이름:\n한 줄 대사:\n키워드:\n캐릭터 설명:\n\n[캐릭터(02)프로필]\n이름:\n한 줄 대사:\n키워드:\n캐릭터 설명:";
+
+async function copyProfileTemplate(){
+  try{
+    if(navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(PROFILE_TEMPLATE);
+    }else{
+      const ta=document.createElement('textarea');
+      ta.value=PROFILE_TEMPLATE;
+      ta.setAttribute('readonly','');
+      ta.style.position='fixed';
+      ta.style.left='-9999px';
+      ta.style.top='0';
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, ta.value.length);
+      const ok=document.execCommand('copy');
+      ta.remove();
+      if(!ok) throw new Error('COPY COMMAND FAILED');
+    }
+    notify('PROFILE COPIED');
+  }catch(err){
+    console.error(err);
+    notify('PROFILE COPY FAILED');
+  }
+}
+
+document.getElementById('profileCopyBtn').addEventListener('click',copyProfileTemplate);
+
+const OOC_TEMPLATE="[OOC: 이전 롤플레잉 중지. AI가 직접 답변한다.\n이전 대화, 캐릭터 설정, 로어북, 관계 및 사건 기록을 참고하여 NPC와 PC의 관계를 아래 양식에 맞춰 작성한다. 필요한 경우 {{char}}와 {{user}}의 생각·평가를 관계와 성격에 맞게 자연스럽게 추론하여 작성해도 된다.\nchar_1 프로필\n이름(코드네임): \n성별: \n나이: \n소속: \n외형: \n기타:\nchar_2 프로필\n이름(코드네임): \n성별: \n나이: \n소속: \n외형: \n기타:\nchar_1과 char_2의 관계: \nRELATIONSHIP VERDICT\n{{char}}가 생각하는 두 사람의 관계에 대한 평가문:\n• 짧은 1~3문장\n• {{char}}의 성격과 관점이 드러나도록 작성\n{{char}}의 관계 판정: DANGEROUS / STABLE / UNDEFINED 중 하나 선택\n{{user}}가 생각하는 두 사람의 관계에 대한 평가문:\n• 짧은 1~3문장\n• {{user}}의 성격과 관점이 드러나도록 작성\n{{user}}의 관계 판정: DANGEROUS / STABLE / UNDEFINED 중 하나 선택\nCROSS MESSAGE\n{{char}}와 {{user}}가 char_1, char_2 또는 두 사람의 관계를 보며 나누는 짧은 대화 1~3개. 자연스러운 구어체로 작성하며 각 대사 앞에 화자를 표시한다.\n{{char}}: {{user}}: …]";
 
 async function copyOOC(){
   try{
@@ -1386,43 +1746,47 @@ async function exportBoard(){
 
   notify('RENDERING PNG...');
 
-  // Capture the ACTUAL board instead of a cloned board.
-  // Cloning was recalculating absolute/transformed verdict/profile positions.
-  const oldBoardTransform = board.style.transform;
-  const oldBoardPosition = board.style.position;
-  const oldBoardLeft = board.style.left;
-  const oldBoardTop = board.style.top;
-  const oldBoardWidth = board.style.width;
-  const oldSpacerHeight = previewSpacer.style.height;
-  const oldSpacerWidth = previewSpacer.style.width;
-  const oldSpacerOverflow = previewSpacer.style.overflow;
-  const oldWrapOverflow = previewWrap.style.overflow;
+  const stage=document.createElement('div');
+  stage.style.position='fixed';
+  stage.style.left='-20000px';
+  stage.style.top='0';
+  stage.style.width=BOARD_W+'px';
+  stage.style.background='#080808';
+  stage.style.pointerEvents='none';
+  stage.style.zIndex='-1';
 
-  document.body.classList.add('exporting');
+  const clone=board.cloneNode(true);
+  clone.style.transform='none';
+  clone.style.position='relative';
+  clone.style.left='0';
+  clone.style.top='0';
+  clone.style.width=BOARD_W+'px';
+  clone.style.margin='0';
+  clone.querySelectorAll('.slot-tools,.msg-controls').forEach(el=>el.remove());
+
+  // Preserve image transforms exactly.
+  const liveSlots=[...board.querySelectorAll('.image-slot')];
+  const cloneSlots=[...clone.querySelectorAll('.image-slot')];
+  liveSlots.forEach((live,index)=>{
+    const copy=cloneSlots[index];
+    if(!copy)return;
+    const liveImg=live.querySelector('img');
+    const copyImg=copy.querySelector('img');
+    if(liveImg&&copyImg){
+      copyImg.src=liveImg.src||'';
+      copyImg.style.cssText=liveImg.style.cssText;
+    }
+  });
+
+  stage.appendChild(clone);
+  document.body.appendChild(stage);
 
   try{
-    // Temporarily restore the board to its native 1800px coordinate system.
-    board.style.transform = 'none';
-    board.style.position = 'relative';
-    board.style.left = '0';
-    board.style.top = '0';
-    board.style.width = BOARD_W + 'px';
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
 
-    previewSpacer.style.width = BOARD_W + 'px';
-    previewSpacer.style.height = board.scrollHeight + 'px';
-    previewSpacer.style.overflow = 'visible';
-    previewWrap.style.overflow = 'visible';
+    const exportHeight=Math.max(clone.scrollHeight,clone.offsetHeight);
 
-    // Give browser two frames to fully recompute absolute positions and image transforms.
-    await new Promise(resolve =>
-      requestAnimationFrame(() =>
-        requestAnimationFrame(resolve)
-      )
-    );
-
-    const exportHeight = Math.max(board.scrollHeight, board.offsetHeight);
-
-    const canvas = await html2canvas(board,{
+    const canvas=await html2canvas(clone,{
       backgroundColor:'#080808',
       scale:2,
       useCORS:true,
@@ -1440,26 +1804,12 @@ async function exportBoard(){
     a.download=`PARUSIA_PAIR_TO_PAIR_${new Date().toISOString().slice(0,10)}.png`;
     a.href=canvas.toDataURL('image/png');
     a.click();
-
     notify('PNG EXPORTED');
   }catch(err){
     console.error(err);
     notify('EXPORT FAILED');
   }finally{
-    // Restore the live preview exactly as it was.
-    board.style.transform = oldBoardTransform;
-    board.style.position = oldBoardPosition;
-    board.style.left = oldBoardLeft;
-    board.style.top = oldBoardTop;
-    board.style.width = oldBoardWidth;
-
-    previewSpacer.style.height = oldSpacerHeight;
-    previewSpacer.style.width = oldSpacerWidth;
-    previewSpacer.style.overflow = oldSpacerOverflow;
-    previewWrap.style.overflow = oldWrapOverflow;
-
-    document.body.classList.remove('exporting');
-    resizePreview();
+    stage.remove();
   }
 }
 document.getElementById('exportBtn').onclick=exportBoard;
