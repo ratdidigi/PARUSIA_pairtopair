@@ -897,10 +897,10 @@ const state={
   keywords:{a1Keywords:['#KEYWORD'],a2Keywords:['#KEYWORD'],b1Keywords:['#KEYWORD'],b2Keywords:['#KEYWORD']},
   images:{},
   messages:[
-    {speaker:'a1',side:'left',text:'……또 거짓말하고 있어?'},
-    {speaker:'b2',side:'right',text:'아니, 이번엔 진짜야.'},
-    {speaker:'a1',side:'left',text:'지금 가볼까?'},
-    {speaker:'b2',side:'right',text:'……오면 말해줄게.'}
+    {speaker:'a1',side:'left',text:'서로의 페어에 대한'},
+    {speaker:'b1',side:'right',text:'대화를 적을 수 있습니다.'},
+    {speaker:'a2',side:'left',text:'CHAT 탭에서'},
+    {speaker:'b2',side:'right',text:'조정해주세요.'}
   ],
   verdicts:{
     a1:{text:'상대 페어 관계에 대한 평가를 입력하세요.',type:''},
@@ -1212,7 +1212,7 @@ async function loadProject(){
 }
 document.getElementById('saveBtn').onclick=()=>saveProject().catch(e=>{ console.error(e); notify('SAVE FAILED'); });
 document.getElementById('loadBtn').onclick=()=>loadProject().catch(e=>{ console.error(e); notify('LOAD FAILED'); });
-document.getElementById('resetBtn').onclick=()=>{ if(confirm('현재 편집 내용을 초기화할까?')) location.reload(); };
+document.getElementById('resetBtn').onclick=()=>{ if(confirm('현재 편집 내용을 초기화할까요?')) location.reload(); };
 
 async function exportBoard(){
   if(!window.html2canvas){ notify('EXPORT LIBRARY ERROR'); return; }
