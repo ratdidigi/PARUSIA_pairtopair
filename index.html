@@ -1399,6 +1399,26 @@ body.exporting [contenteditable="true"]{outline:none!important;}
 }
 </style>
 
+
+<style id="profile-line-multiline-fix">
+/* Profile one-line fields can contain manual line breaks.
+   Preserve Enter/newlines in the preview speech bubbles. */
+.line-bubble{
+  white-space:pre-wrap!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+}
+[data-input="a1Line"],
+[data-input="a2Line"],
+[data-input="b1Line"],
+[data-input="b2Line"]{
+  min-height:72px!important;
+  resize:vertical!important;
+  white-space:pre-wrap!important;
+  line-height:1.55!important;
+}
+</style>
+
 </head>
 <body>
 <header class="topbar">
