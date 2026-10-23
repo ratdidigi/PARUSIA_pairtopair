@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<title>PARUSIA — Pair to Pair Maker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+:root{
+  --bg:#080808;--panel:#0d0b0a;--paper:#e8d8b5;--paper2:#f4ead5;--ink:#1d1711;
+  --gold:#c7a86a;--gold2:#7d6742;--red:#c70f1b;--wine:#640810;--line:rgba(232,216,181,.18);
+  --muted:#887f71;--serif:"Noto Serif KR",serif;--sans:"Noto Sans KR",sans-serif;--mono:"IBM Plex Mono",monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--paper);font-family:var(--sans)}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 13% 5%,rgba(199,15,27,.10),transparent 32rem),
+    radial-gradient(circle at 88% 12%,rgba(199,168,106,.06),transparent 35rem),
+    #080808;
+}
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.075;mix-blend-mode:screen;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.42'/%3E%3C/svg%3E");
+}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.topbar{
+  position:sticky;top:0;z-index:1000;display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;
+  min-height:66px;padding:10px 22px;border-bottom:1px solid var(--line);
+  background:rgba(8,8,8,.92);backdrop-filter:blur(16px);
+}
+.brand{display:flex;align-items:center;gap:13px;font:900 16px var(--serif);letter-spacing:.22em}
+.cross{position:relative;width:22px;height:30px;filter:drop-shadow(0 0 8px rgba(199,15,27,.32))}
+.cross:before,.cross:after{content:"";position:absolute;background:var(--red)}
+.cross:before{left:10px;top:0;width:2px;height:30px}
+.cross:after{left:2px;top:9px;width:18px;height:2px}
+.top-title{text-align:center;font:800 22px var(--serif);letter-spacing:.23em;white-space:nowrap}
+.top-title small{margin-left:8px;color:#a89c84;font:600 8px var(--mono);letter-spacing:.35em}
+.top-actions{display:flex;justify-content:flex-end;gap:7px;flex-wrap:wrap}
+.btn{
+  height:34px;padding:0 13px;border:1px solid var(--line);background:#0b0b0b;color:#c2b7a3;
+  font:600 9px var(--mono);letter-spacing:.13em;text-transform:uppercase
+}
+.btn:hover{border-color:var(--gold);color:var(--paper2)}
+.btn.primary{border-color:rgba(199,15,27,.7);background:rgba(100,8,16,.35);color:#f2e1d1}
+.btn.danger{color:#c18b8b}
+.shell{padding:16px 16px 36px}
+.preview-wrap{width:100%;overflow:hidden;border:1px solid rgba(199,168,106,.14);background:#050505}
+.preview-spacer{position:relative;width:100%;overflow:hidden}
+.preview-spacer>.pair-board{position:absolute;left:0;top:0;transform-origin:top left;will-change:transform}
+.pair-board{
+  width:1800px;min-height:965px;position:relative;overflow:hidden;
+  display:grid;grid-template-columns:700px 400px 700px;
+  background:
+    linear-gradient(rgba(199,168,106,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(199,168,106,.04) 1px,transparent 1px),
+    radial-gradient(circle at 9% 0%,rgba(199,15,27,.12),transparent 440px),
+    radial-gradient(circle at 90% 10%,rgba(199,15,27,.08),transparent 460px),
+    #080808;
+  background-size:180px 180px,180px 180px,auto,auto;
+  border:1px solid rgba(232,216,181,.18);
+}
+.pair-board:before{content:"";position:absolute;inset:10px;border:1px solid rgba(199,168,106,.10);pointer-events:none;z-index:30}
+.side{position:relative;min-height:965px;background:#090909;overflow:visible}
+.side-a{border-right:0}
+.side-b{border-left:0}
+.hero-image{height:442px;position:relative;overflow:hidden;background:#0f0f0e;z-index:1}
+.side-a .hero-image{width:900px;margin-right:-200px}
+.side-b .hero-image{width:900px;margin-left:-200px}
+.image-slot{position:relative;overflow:hidden;background:#10100f;touch-action:none;user-select:none}
+.image-slot img{
+  position:absolute;left:50%;top:50%;max-width:none;max-height:none;transform-origin:center center;
+  pointer-events:none;user-select:none;-webkit-user-drag:none;will-change:transform;
+}
+.image-slot.empty:before{
+  content:"IMAGE / UPLOAD";position:absolute;inset:0;display:grid;place-items:center;color:#514b41;
+  font:600 9px var(--mono);letter-spacing:.16em;background:
+  radial-gradient(circle at 50% 42%,rgba(199,168,106,.07),transparent 32%),
+  repeating-linear-gradient(45deg,transparent 0 16px,rgba(255,255,255,.012) 16px 17px);
+}
+.slot-tools{position:absolute;left:10px;top:10px;z-index:8;display:flex;gap:5px;opacity:0;transition:.2s}
+.image-slot:hover .slot-tools,.image-slot:focus-within .slot-tools{opacity:1}
+.mini-btn{border:1px solid rgba(232,216,181,.22);background:rgba(7,7,7,.84);color:#cfbf9f;padding:5px 7px;font:600 8px var(--mono)}
+.hero-image:after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:58%;pointer-events:none;z-index:2;
+  background:linear-gradient(to top,#090909 0%,rgba(9,9,9,.94) 22%,rgba(9,9,9,.40) 70%,transparent 100%);
+}
+.hero-head{position:absolute;left:30px;right:30px;top:28px;z-index:6;display:flex;justify-content:space-between;pointer-events:none}
+.pair-no{font:600 8px var(--mono);letter-spacing:.18em;color:#b99d68}
+.hero-head-a{justify-content:flex-end}
+.hero-head-b{justify-content:flex-start}
+.pair-title{position:absolute;left:30px;right:30px;top:72px;z-index:6;font:900 50px/1.03 var(--serif);letter-spacing:-.035em;text-shadow:0 4px 20px rgba(0,0,0,.85)}
+.pair-quote{position:absolute;left:30px;right:30px;top:133px;z-index:6;color:#c0b097;font:500 13px/1.5 var(--serif);text-shadow:0 2px 12px #000}
+.side-b .pair-title,.side-b .pair-quote{text-align:right}
+.portrait-band{
+  position:absolute;left:34px;right:34px;top:270px;display:flex;gap:0;z-index:12;align-items:flex-start;pointer-events:none;
+}
+.side-b .portrait-band{justify-content:flex-end}
+.portrait-card{
+  width:198px;height:292px;position:relative;flex:0 0 auto;padding:9px 9px 18px;
+  background:#eee8dc;border:1px solid rgba(255,255,255,.75);
+  box-shadow:0 20px 38px rgba(0,0,0,.56),0 2px 6px rgba(0,0,0,.24);
+  pointer-events:auto;transform-origin:50% 88%;
+}
+.portrait-card:first-child{transform:rotate(-3.4deg) translateY(2px);z-index:2}
+.portrait-card:last-child{transform:rotate(2.7deg) translateY(11px);margin-left:-10px;z-index:3}
+.side-b .portrait-card:first-child{transform:rotate(3.2deg) translateY(7px)}
+.side-b .portrait-card:last-child{transform:rotate(-2.6deg) translateY(0);margin-left:-10px}
+.portrait-card .image-slot{width:100%;height:100%;background:#121110;cursor:grab}
+.portrait-card .image-slot:active{cursor:grabbing}
+.portrait-card:after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:10;
+  box-shadow:inset 0 0 0 1px rgba(46,39,31,.10);
+}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:154px 28px 24px}
+.profile{min-width:0;position:relative}
+.profile-label{font:600 8px var(--mono);letter-spacing:.16em;color:#95866e;text-transform:uppercase}
+.profile-name{margin:0 0 8px;font:900 25px/1.08 var(--serif);letter-spacing:-.02em}
+.keyword-chips{display:flex;flex-wrap:wrap;gap:6px;min-height:24px;margin:0 0 10px}
+.keyword-chip{
+  display:inline-flex;align-items:center;min-height:24px;padding:4px 10px;border-radius:999px;
+  border:1px solid rgba(199,168,106,.24);background:rgba(255,255,255,.04);color:#d7c9ae;
+  font:600 8px var(--mono);letter-spacing:.08em;text-transform:uppercase
+}
+.line-bubble{
+  position:relative;display:inline-block;max-width:100%;margin:8px 0 12px;padding:10px 14px 11px;border-radius:18px 18px 18px 6px;
+  background:linear-gradient(135deg,#eee1c6,#dac7a6);color:#241c15;font-size:12px;line-height:1.55;box-shadow:0 10px 26px rgba(0,0,0,.22)
+}
+.line-bubble:after{
+  content:"";position:absolute;left:16px;bottom:-9px;border-width:10px 10px 0 0;border-style:solid;
+  border-color:#e5d6b8 transparent transparent transparent;filter:drop-shadow(0 2px 2px rgba(0,0,0,.15));
+}
+.profile-desc{
+  color:#cfc3b1;font-size:11px;line-height:1.78;min-height:78px;max-width:88%;padding-left:2px;white-space:pre-wrap;outline:none;
+}
+.profile-desc:focus,.profile-name:focus,.pair-title:focus,.pair-quote:focus,.line-bubble:focus{outline:1px dashed rgba(199,168,106,.36);outline-offset:4px}
+.chat{
+  position:relative;min-height:965px;padding:0;background:transparent;z-index:20;
+  display:flex;flex-direction:column;overflow:visible;
+}
+/* Wide continuous center veil: A/B images meet exactly at 50%, then dissolve under one soft overlay. */
+.chat:before{
+  content:"";
+  position:absolute;
+  top:0;
+  bottom:0;
+  left:-360px;
+  right:-360px;
+  pointer-events:none;
+  z-index:0;
+  background:linear-gradient(90deg,
+    rgba(7,7,7,0) 0%,
+    rgba(7,7,7,.012) 6%,
+    rgba(7,7,7,.028) 12%,
+    rgba(7,7,7,.055) 18%,
+    rgba(7,7,7,.10) 24%,
+    rgba(7,7,7,.17) 30%,
+    rgba(7,7,7,.27) 35%,
+    rgba(7,7,7,.40) 39%,
+    rgba(7,7,7,.56) 42%,
+    rgba(7,7,7,.72) 45%,
+    rgba(7,7,7,.86) 47%,
+    rgba(7,7,7,.95) 48.5%,
+    #070707 49.5%,
+    #070707 50.5%,
+    rgba(7,7,7,.95) 51.5%,
+    rgba(7,7,7,.86) 53%,
+    rgba(7,7,7,.72) 55%,
+    rgba(7,7,7,.56) 58%,
+    rgba(7,7,7,.40) 61%,
+    rgba(7,7,7,.27) 65%,
+    rgba(7,7,7,.17) 70%,
+    rgba(7,7,7,.10) 76%,
+    rgba(7,7,7,.055) 82%,
+    rgba(7,7,7,.028) 88%,
+    rgba(7,7,7,.012) 94%,
+    rgba(7,7,7,0) 100%);
+}
+.chat-head{
+  position:relative;z-index:2;height:92px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid rgba(232,216,181,.07);
+  color:#c3b79f;font:700 9px var(--mono);letter-spacing:.40em
+}
+.chat-list{position:relative;z-index:2;display:flex;flex-direction:column;gap:14px;flex:1;padding:24px 14px 16px;min-height:690px}
+.msg{display:flex;gap:8px;align-items:flex-start}
+.msg.right{flex-direction:row-reverse}
+.avatar{width:34px;height:34px;border-radius:50%;overflow:hidden;flex:0 0 34px;border:1px solid rgba(232,216,181,.28);background:#111;position:relative}
+.avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.avatar-fallback{width:100%;height:100%;display:grid;place-items:center;color:#7e7669;font:700 10px var(--serif)}
+.bubble{max-width:255px;padding:11px 13px;border-radius:9px;background:#e5d7bc;color:#261e16;font-size:11px;line-height:1.55;white-space:pre-wrap;word-break:break-word;box-shadow:0 7px 18px rgba(0,0,0,.22)}
+.msg.right .bubble{background:#90111a;color:#f4e8da}
+.msg-controls{display:flex;gap:4px;margin-top:4px;opacity:.35}
+.msg:hover .msg-controls{opacity:1}
+.msg-controls button{border:0;background:none;color:#7f7568;font:600 8px var(--mono);padding:1px 3px}
+.chat-foot{position:relative;z-index:2;padding:13px 14px 18px;border-top:1px solid rgba(232,216,181,.10);text-align:center;color:#625b51;font:600 8px var(--mono);letter-spacing:.16em}
+.edit-dock{width:min(1360px,calc(100% - 16px));margin:18px auto 0;border:1px solid var(--line);background:rgba(12,11,10,.98)}
+.dock-tabs{display:flex;overflow-x:auto;border-bottom:1px solid var(--line)}
+.tab{flex:0 0 auto;border:0;border-right:1px solid var(--line);background:#0a0a0a;color:#777066;padding:12px 18px;font:700 9px var(--mono);letter-spacing:.12em}
+.tab.active{color:#eee0c6;background:rgba(100,8,16,.16)}
+.dock-panel{display:none;padding:16px}
+.dock-panel.active{display:block}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.form-card{border:1px solid rgba(232,216,181,.12);padding:14px;background:#0a0a0a}
+.form-card h3{margin:0 0 12px;font:800 14px var(--serif);color:#dbcdb3}
+.f{margin:9px 0}
+.f label{display:block;margin-bottom:4px;color:#7a7266;font:600 8px var(--mono);letter-spacing:.10em}
+.f input,.f textarea,.f select{width:100%;border:1px solid rgba(232,216,181,.17);background:#080808;color:#d2c8b6;padding:9px 10px;outline:none;font-size:12px}
+.f textarea{min-height:76px;resize:vertical}
+.f input:focus,.f textarea:focus,.f select:focus{border-color:var(--gold)}
+.upload-line{display:flex;gap:7px;flex-wrap:wrap}
+.upload-line .btn{height:32px}
+.keyword-editor{display:flex;gap:7px;align-items:center}
+.keyword-editor input{flex:1}
+.keyword-list-editor{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.keyword-pill-editor{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;border:1px solid rgba(199,168,106,.24);background:rgba(255,255,255,.04);color:#dbcbae;font:600 8px var(--mono)}
+.keyword-pill-editor button{border:0;background:none;color:#b57a7a;font:700 9px var(--mono);padding:0}
+.chat-maker{display:grid;grid-template-columns:180px 1fr auto;gap:8px;align-items:end}
+.chat-maker textarea{min-height:60px}
+.chat-summary{display:grid;gap:6px;margin-top:14px}
+.chat-summary-row{display:grid;grid-template-columns:90px 65px 1fr 44px;gap:8px;align-items:center;padding:8px;border:1px solid rgba(232,216,181,.11);color:#91897d;font-size:10px}
+.chat-summary-row button{border:0;background:none;color:#b37474;font:600 8px var(--mono)}
+.help{color:#6f675c;font-size:10px;line-height:1.75}
+.toast{position:fixed;right:14px;bottom:14px;z-index:3000;padding:11px 14px;border:1px solid rgba(199,168,106,.35);background:#0d0c0b;color:#cfc3ad;font:600 9px var(--mono);letter-spacing:.08em;opacity:0;transform:translateY(10px);pointer-events:none;transition:.22s}
+.toast.on{opacity:1;transform:none}
+.export-clone{position:fixed;left:-99999px;top:0;z-index:-1;opacity:1;pointer-events:none;background:#080808;padding:0;margin:0}
+.export-clone .slot-tools,.export-clone .msg-controls{display:none!important}
+.export-clone [contenteditable="true"]{outline:none!important}
+@media(max-width:1100px){
+  .topbar{grid-template-columns:1fr auto;gap:10px}
+  .top-title{grid-column:1/-1;grid-row:1;font-size:18px}
+  .brand{grid-row:2}.top-actions{grid-row:2}
+  .form-grid{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+  .shell{padding:10px 6px 22px}.topbar{padding:8px 10px}.brand{font-size:12px}.top-title{font-size:15px}.top-title small{display:none}
+  .top-actions{gap:4px}.btn{height:31px;padding:0 8px;font-size:8px}
+  .edit-dock{width:calc(100% - 8px);margin-top:10px}.dock-panel{padding:10px}
+  .chat-maker{grid-template-columns:1fr 1fr}.chat-maker .wide,.chat-maker .add{grid-column:1/-1}
+  .chat-summary-row{grid-template-columns:66px 48px 1fr 34px}
+}
+
+/* PAIR B MIRROR ALIGNMENT */
+.side-b .profile{
+  text-align:right;
+}
+.side-b .keyword-chips{
+  justify-content:flex-end;
+}
+.side-b .profile-desc{
+  text-align:right;
+  margin-left:auto;
+  padding-left:0;
+  padding-right:2px;
+}
+.side-b .line-bubble{
+  border-radius:18px 18px 6px 18px;
+  text-align:right;
+}
+.side-b .line-bubble:after{
+  left:auto;
+  right:15px;
+  bottom:-8px;
+  width:14px;
+  height:10px;
+  border:0;
+  background:#e5d6b8;
+  clip-path:polygon(0 0,100% 0,100% 100%);
+  filter:drop-shadow(0 2px 2px rgba(0,0,0,.15));
+}
+
+</style>
+
+<style id="hero-seam-fix">
+/* Remove the bright seam where the header images meet the lower black area. */
+.hero-image{
+  margin-bottom:-3px;
+}
+.hero-image:after{
+  bottom:-3px!important;
+  height:72%!important;
+  background:linear-gradient(to top,
+    #090909 0%,
+    #090909 5%,
+    rgba(9,9,9,.995) 12%,
+    rgba(9,9,9,.96) 24%,
+    rgba(9,9,9,.78) 40%,
+    rgba(9,9,9,.48) 60%,
+    rgba(9,9,9,.20) 78%,
+    transparent 100%)!important;
+}
+/* The center veil now also fades vertically into the lower black field, so there is no horizontal cut line. */
+.chat:before{
+  bottom:auto!important;
+  height:560px!important;
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 66%,rgba(0,0,0,.96) 74%,rgba(0,0,0,.74) 84%,rgba(0,0,0,.32) 94%,transparent 100%);
+  mask-image:linear-gradient(to bottom,#000 0%,#000 66%,rgba(0,0,0,.96) 74%,rgba(0,0,0,.74) 84%,rgba(0,0,0,.32) 94%,transparent 100%);
+}
+/* A tiny dark overlap hides sub-pixel seams after mobile scaling/export. */
+.side:after{
+  content:"";
+  position:absolute;
+  left:0;right:0;top:439px;height:6px;
+  background:linear-gradient(to bottom,rgba(9,9,9,.15),#090909 70%,#090909);
+  pointer-events:none;
+  z-index:11;
+}
+</style>
+
+
+<style id="relationship-verdict-style">
+/* RELATIONSHIP VERDICT — full-width section under the original pair layout */
+.relationship-verdict{
+  grid-column:1 / -1;
+  position:relative;
+  min-height:540px;
+  padding:54px 72px 64px;
+  border-top:1px solid rgba(199,168,106,.16);
+  background:
+    radial-gradient(circle at 50% 0%,rgba(199,168,106,.045),transparent 280px),
+    linear-gradient(180deg,#090909,#070707);
+  overflow:hidden;
+}
+.relationship-verdict:before{
+  content:"";
+  position:absolute;
+  left:50%;top:96px;bottom:44px;
+  width:1px;
+  background:linear-gradient(to bottom,transparent,rgba(199,168,106,.17) 18%,rgba(199,168,106,.17) 82%,transparent);
+}
+.verdict-head{
+  position:relative;
+  z-index:1;
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:24px;
+  margin-bottom:30px;
+  padding-bottom:16px;
+  border-bottom:1px solid rgba(199,168,106,.12);
+}
+.verdict-kicker{
+  color:var(--red);
+  font:700 8px var(--mono);
+  letter-spacing:.20em;
+}
+.verdict-title{
+  margin:5px 0 0;
+  color:var(--paper2);
+  font:900 31px/1 var(--serif);
+  letter-spacing:-.025em;
+}
+.verdict-note{
+  color:#6f675d;
+  font:600 8px/1.7 var(--mono);
+  letter-spacing:.09em;
+  text-align:right;
+}
+.verdict-layout{
+  position:relative;
+  z-index:1;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:70px;
+}
+.verdict-lane{
+  display:grid;
+  gap:18px;
+}
+.verdict-card{
+  position:relative;
+  min-height:155px;
+  padding:20px 190px 20px 24px;
+  border:1px solid rgba(232,216,181,.20);
+  border-radius:0;
+  background:
+    linear-gradient(135deg,rgba(232,216,181,.045),rgba(232,216,181,.012)),
+    #0b0b0b;
+  box-shadow:0 16px 36px rgba(0,0,0,.16);
+}
+.verdict-card.side-b{
+  padding:20px 24px 20px 190px;
+  text-align:right;
+}
+.verdict-card.side-a:before,
+.verdict-card.side-b:before{
+  content:"";
+  position:absolute;
+  top:26px;
+  width:15px;height:15px;
+  background:#0b0b0b;
+  border:1px solid rgba(232,216,181,.20);
+  transform:rotate(45deg);
+  z-index:0;
+}
+.verdict-card.side-a:before{
+  left:-8px;
+  border-top:0;border-right:0;
+}
+.verdict-card.side-b:before{
+  right:-8px;
+  border-bottom:0;border-left:0;
+}
+.verdict-name{
+  position:relative;
+  z-index:1;
+  margin-bottom:8px;
+  color:var(--paper2);
+  font:900 19px/1.1 var(--serif);
+  letter-spacing:-.02em;
+}
+.verdict-role{
+  position:relative;
+  z-index:1;
+  margin-bottom:9px;
+  color:#746c60;
+  font:700 7px var(--mono);
+  letter-spacing:.14em;
+  text-transform:uppercase;
+}
+.verdict-copy{
+  position:relative;
+  z-index:1;
+  color:#bdb4a6;
+  font-size:11px;
+  line-height:1.78;
+  white-space:pre-wrap;
+  word-break:keep-all;
+}
+.verdict-stamp-wrap{
+  position:absolute;
+  right:17px;
+  bottom:9px;
+  width:165px;
+  height:128px;
+  display:grid;
+  place-items:center;
+  pointer-events:none;
+}
+.verdict-card.side-b .verdict-stamp-wrap{
+  right:auto;
+  left:17px;
+}
+.verdict-stamp{
+  display:none;
+  max-width:160px;
+  max-height:118px;
+  object-fit:contain;
+  opacity:.88;
+  filter:drop-shadow(0 5px 8px rgba(0,0,0,.22));
+}
+.verdict-stamp-wrap.has-stamp .verdict-stamp{display:block}
+.verdict-stamp-wrap.missing:after{
+  content:attr(data-filename);
+  display:block;
+  max-width:150px;
+  padding:7px 8px;
+  border:1px dashed rgba(232,216,181,.18);
+  color:#6e665b;
+  font:600 7px/1.5 var(--mono);
+  text-align:center;
+  word-break:break-all;
+}
+.verdict-stamp-wrap.missing .verdict-stamp{display:none!important}
+
+/* Editor */
+.verdict-editor-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.verdict-editor-card{
+  border:1px solid rgba(232,216,181,.12);
+  background:#0a0a0a;
+  padding:14px;
+}
+.verdict-editor-card.b{text-align:right}
+.verdict-editor-card h3{
+  margin:0 0 10px;
+  font:800 15px var(--serif);
+  color:#dbcdb3;
+}
+.verdict-editor-card .identity{
+  margin-bottom:10px;
+  color:#746d62;
+  font:600 8px var(--mono);
+  letter-spacing:.12em;
+}
+.verdict-editor-card textarea,
+.verdict-editor-card select{
+  width:100%;
+  border:1px solid rgba(232,216,181,.17);
+  background:#080808;
+  color:#d2c8b6;
+  padding:9px 10px;
+  outline:none;
+  font-size:12px;
+}
+.verdict-editor-card textarea{min-height:100px;resize:vertical}
+.verdict-editor-card select{margin-top:8px}
+.verdict-editor-card textarea:focus,
+.verdict-editor-card select:focus{border-color:var(--gold)}
+.verdict-file-note{
+  margin-top:12px;
+  color:#5f584f;
+  font:600 8px/1.65 var(--mono);
+}
+.verdict-file-note code{color:#9d8c6d}
+
+@media(max-width:1100px){
+  .verdict-editor-grid{grid-template-columns:1fr}
+}
+</style>
+
+
+<style id="compact-verdict-style">
+/* verdict now lives inside the empty center area below CROSS MESSAGE */
+.chat-list{
+  flex:0 0 auto!important;
+  min-height:0!important;
+  padding-bottom:12px!important;
+}
+/* Keep verdict at the floor of the center column. More messages simply push the floor downward. */
+.chat-verdict{
+  position:relative;
+  z-index:3;
+  width:calc(100% - 24px);
+  margin: auto auto 8px;
+  padding:13px 0 0;
+  border-top:1px solid rgba(199,168,106,.12);
+  background:transparent;
+}
+.chat-foot{
+  margin-top:0!important;
+  flex:0 0 auto;
+}
+.chat-verdict-head{
+  margin:0 0 10px;
+  text-align:center;
+  color:#8f816b;
+  font:700 7px var(--mono);
+  letter-spacing:.24em;
+}
+.chat-verdict-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px 12px;
+}
+.chat-verdict-card{
+  position:relative;
+  min-height:128px;
+  padding:12px 12px 54px;
+  border:1px solid rgba(232,216,181,.18);
+  border-radius:0;
+  background:rgba(11,11,11,.72);
+  box-shadow:0 8px 18px rgba(0,0,0,.13);
+}
+.chat-verdict-card.side-a{text-align:left}
+.chat-verdict-card.side-b{text-align:right}
+.chat-verdict-card.side-a:before,
+.chat-verdict-card.side-b:before{
+  content:"";
+  position:absolute;
+  top:17px;
+  width:9px;
+  height:9px;
+  background:#0b0b0b;
+  border:1px solid rgba(232,216,181,.18);
+  transform:rotate(45deg);
+}
+.chat-verdict-card.side-a:before{
+  left:-5px;
+  border-top:0;
+  border-right:0;
+}
+.chat-verdict-card.side-b:before{
+  right:-5px;
+  border-bottom:0;
+  border-left:0;
+}
+.chat-verdict-name{
+  color:var(--paper2);
+  font:900 13px/1.1 var(--serif);
+  margin-bottom:5px;
+}
+.chat-verdict-copy{
+  color:#aaa093;
+  font-size:8px;
+  line-height:1.62;
+  white-space:pre-wrap;
+  word-break:keep-all;
+  max-height:48px;
+  overflow:hidden;
+}
+.chat-verdict-stamp{
+  position:absolute;
+  left:7px;
+  right:7px;
+  bottom:4px;
+  height:48px;
+  display:grid;
+  place-items:center;
+  pointer-events:none;
+}
+.chat-verdict-card.side-a .chat-verdict-stamp{justify-items:start}
+.chat-verdict-card.side-b .chat-verdict-stamp{justify-items:end}
+.chat-verdict-stamp img{
+  display:none;
+  width:auto;
+  max-width:102px;
+  max-height:46px;
+  object-fit:contain;
+  opacity:.88;
+  filter:drop-shadow(0 3px 4px rgba(0,0,0,.2));
+}
+.chat-verdict-stamp.has-stamp img{display:block}
+.chat-verdict-stamp.missing:after{
+  content:attr(data-filename);
+  color:#5f584f;
+  font:600 5px/1.25 var(--mono);
+  word-break:break-all;
+  text-align:center;
+}
+.chat-verdict-stamp.missing img{display:none!important}
+
+/* Full-width verdict layout from v9 is intentionally removed. */
+.relationship-verdict{display:none!important}
+</style>
+
+
+<style id="verdict-card-final-positioning">
+/* Keep the widened verdict area, but make the individual document cards smaller. */
+.chat-verdict{
+  width:760px!important;
+  max-width:none!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  margin:auto 0 8px!important;
+}
+
+.chat-verdict-grid{
+  display:grid!important;
+  grid-template-columns:300px 300px!important;
+  justify-content:space-between!important;
+  gap:14px 0!important;
+}
+
+/* Smaller document-like verdict fields. No separate empty stamp band. */
+.chat-verdict-card{
+  min-height:96px!important;
+  height:auto!important;
+  padding:12px 14px 13px!important;
+  border:1px solid rgba(232,216,181,.18)!important;
+  background:
+    linear-gradient(135deg,rgba(232,216,181,.035),rgba(232,216,181,.008)),
+    rgba(11,11,11,.58)!important;
+  overflow:visible!important;
+}
+
+/* A01 and B02 stay where the grid naturally places them. */
+/* A02 gets pulled farther toward Pair A; B01 toward Pair B. */
+.chat-verdict-card[data-verdict-card="a2"]{
+  transform:translateX(-52px)!important;
+}
+.chat-verdict-card[data-verdict-card="b1"]{
+  transform:translateX(52px)!important;
+}
+
+/* Evaluation copy uses the whole card now. */
+.chat-verdict-copy{
+  position:relative!important;
+  z-index:2!important;
+  max-height:none!important;
+  overflow:visible!important;
+  padding-right:18px!important;
+  font-size:8px!important;
+  line-height:1.58!important;
+}
+.chat-verdict-card.side-b .chat-verdict-copy{
+  padding-right:0!important;
+  padding-left:18px!important;
+}
+
+/* Stamp is literally stamped OVER the document, instead of occupying a black box below it. */
+.chat-verdict-stamp{
+  position:absolute!important;
+  left:auto!important;
+  right:10px!important;
+  bottom:7px!important;
+  width:116px!important;
+  height:70px!important;
+  display:block!important;
+  pointer-events:none!important;
+  z-index:3!important;
+  background:transparent!important;
+  place-items:unset!important;
+}
+.chat-verdict-card.side-b .chat-verdict-stamp{
+  right:auto!important;
+  left:10px!important;
+}
+
+.chat-verdict-stamp img{
+  position:absolute!important;
+  right:0!important;
+  bottom:0!important;
+  display:none;
+  width:auto!important;
+  height:auto!important;
+  max-width:112px!important;
+  max-height:64px!important;
+  object-fit:contain!important;
+  opacity:.72!important;
+  mix-blend-mode:normal;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.18))!important;
+  transform:none!important;
+  transform-origin:center!important;
+}
+.chat-verdict-card.side-b .chat-verdict-stamp img{
+  left:0!important;
+  right:auto!important;
+  transform:none!important;
+}
+.chat-verdict-stamp.has-stamp img{
+  display:block!important;
+}
+
+/* Missing file text stays tiny and does not create a dark empty area. */
+.chat-verdict-stamp.missing:after{
+  position:absolute;
+  right:0;
+  bottom:0;
+  content:attr(data-filename);
+  color:#5f584f;
+  font:600 5px/1.2 var(--mono);
+  background:transparent;
+}
+.chat-verdict-card.side-b .chat-verdict-stamp.missing:after{
+  right:auto;
+  left:0;
+}
+
+/* Profiles: keep A01/B02 fixed, pull A02/B01 farther outward. */
+.side-a .profile-grid > .profile:nth-child(2){
+  transform:translateX(-88px)!important;
+}
+.side-b .profile-grid > .profile:nth-child(1){
+  transform:translateX(88px)!important;
+}
+</style>
+
+
+<style id="export-render-fix">
+body.exporting .slot-tools,
+body.exporting .msg-controls{
+  display:none!important;
+}
+body.exporting [contenteditable="true"]{
+  outline:none!important;
+}
+</style>
+
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="cross"></span>PARUSIA</div>
+  <div class="top-title">PAIR TO PAIR <small>MAKER</small></div>
+  <div class="top-actions">
+    <button class="btn" id="loadBtn">LOAD</button>
+    <button class="btn" id="saveBtn">SAVE</button>
+    <button class="btn" id="oocCopyBtn">OOC COPY</button>
+    <button class="btn primary" id="exportBtn">EXPORT PNG</button>
+    <button class="btn danger" id="resetBtn">RESET</button>
+  </div>
+</header>
+
+<main class="shell">
+  <div class="preview-wrap" id="previewWrap">
+    <div class="preview-spacer" id="previewSpacer">
+      <section class="pair-board" id="pairBoard">
+        <section class="side side-a">
+          <div class="hero-image image-slot empty" data-slot="aHero">
+            <img alt="">
+            <div class="slot-tools"><button class="mini-btn upload-trigger" data-slot="aHero">UPLOAD</button><button class="mini-btn reset-image" data-slot="aHero">RESET</button></div>
+            <div class="hero-head hero-head-a"><span class="pair-no">01</span></div>
+            <div class="pair-title" contenteditable="true" data-bind="aPairTitle">PAIR A</div>
+            <div class="pair-quote" contenteditable="true" data-bind="aPairQuote">“두 사람을 설명하는 한 문장.”</div>
+          </div>
+          <div class="portrait-band">
+              <div class="portrait-card"><div class="image-slot empty" data-slot="a1Image"><img alt=""><div class="slot-tools"><button class="mini-btn upload-trigger" data-slot="a1Image">UPLOAD</button><button class="mini-btn reset-image" data-slot="a1Image">RESET</button></div></div></div>
+              <div class="portrait-card"><div class="image-slot empty" data-slot="a2Image"><img alt=""><div class="slot-tools"><button class="mini-btn upload-trigger" data-slot="a2Image">UPLOAD</button><button class="mini-btn reset-image" data-slot="a2Image">RESET</button></div></div></div>
+            </div>
+
+          <div class="profile-grid">
+            <article class="profile">
+              <div class="profile-name" contenteditable="true" data-bind="a1Name">A-01</div>
+              <div class="keyword-chips" data-keywords-view="a1Keywords"></div>
+              <div class="line-bubble" contenteditable="true" data-bind="a1Line">한 줄 대사를 입력하세요.</div>
+              <div class="profile-desc" contenteditable="true" data-bind="a1Desc">캐릭터 설명을 입력하세요.</div>
+            </article>
+            <article class="profile">
+              <div class="profile-name" contenteditable="true" data-bind="a2Name">A-02</div>
+              <div class="keyword-chips" data-keywords-view="a2Keywords"></div>
+              <div class="line-bubble" contenteditable="true" data-bind="a2Line">한 줄 대사를 입력하세요.</div>
+              <div class="profile-desc" contenteditable="true" data-bind="a2Desc">캐릭터 설명을 입력하세요.</div>
+            </article>
+          </div>
+        </section>
+
+        <section class="chat">
+          <div class="chat-head">CROSS MESSAGE</div>
+          <div class="chat-list" id="chatList"></div>
+
+          <section class="chat-verdict" id="relationshipVerdict">
+            <div class="chat-verdict-head">RELATIONSHIP VERDICT</div>
+            <div class="chat-verdict-grid">
+              <article class="chat-verdict-card side-a" data-verdict-card="a1">
+                <div class="chat-verdict-name" data-verdict-name="a1">A-01</div>
+                <div class="chat-verdict-copy" data-verdict-copy="a1">상대 페어 관계에 대한 평가를 입력하세요.</div>
+                <div class="chat-verdict-stamp" data-verdict-wrap="a1"><img data-verdict-stamp="a1" alt=""></div>
+              </article>
+
+              <article class="chat-verdict-card side-b" data-verdict-card="b1">
+                <div class="chat-verdict-name" data-verdict-name="b1">B-01</div>
+                <div class="chat-verdict-copy" data-verdict-copy="b1">상대 페어 관계에 대한 평가를 입력하세요.</div>
+                <div class="chat-verdict-stamp" data-verdict-wrap="b1"><img data-verdict-stamp="b1" alt=""></div>
+              </article>
+
+              <article class="chat-verdict-card side-a" data-verdict-card="a2">
+                <div class="chat-verdict-name" data-verdict-name="a2">A-02</div>
+                <div class="chat-verdict-copy" data-verdict-copy="a2">상대 페어 관계에 대한 평가를 입력하세요.</div>
+                <div class="chat-verdict-stamp" data-verdict-wrap="a2"><img data-verdict-stamp="a2" alt=""></div>
+              </article>
+
+              <article class="chat-verdict-card side-b" data-verdict-card="b2">
+                <div class="chat-verdict-name" data-verdict-name="b2">B-02</div>
+                <div class="chat-verdict-copy" data-verdict-copy="b2">상대 페어 관계에 대한 평가를 입력하세요.</div>
+                <div class="chat-verdict-stamp" data-verdict-wrap="b2"><img data-verdict-stamp="b2" alt=""></div>
+              </article>
+            </div>
+          </section>
+
+          <div class="chat-foot">PAIR ARCHIVE / PRIVATE THOUGHTS</div>
+        </section>
+
+        <section class="side side-b">
+          <div class="hero-image image-slot empty" data-slot="bHero">
+            <img alt="">
+            <div class="slot-tools"><button class="mini-btn upload-trigger" data-slot="bHero">UPLOAD</button><button class="mini-btn reset-image" data-slot="bHero">RESET</button></div>
+            <div class="hero-head hero-head-b"><span class="pair-no">02</span></div>
+            <div class="pair-title" contenteditable="true" data-bind="bPairTitle">PAIR B</div>
+            <div class="pair-quote" contenteditable="true" data-bind="bPairQuote">“두 사람을 설명하는 한 문장.”</div>
+          </div>
+          <div class="portrait-band">
+              <div class="portrait-card"><div class="image-slot empty" data-slot="b1Image"><img alt=""><div class="slot-tools"><button class="mini-btn upload-trigger" data-slot="b1Image">UPLOAD</button><button class="mini-btn reset-image" data-slot="b1Image">RESET</button></div></div></div>
+              <div class="portrait-card"><div class="image-slot empty" data-slot="b2Image"><img alt=""><div class="slot-tools"><button class="mini-btn upload-trigger" data-slot="b2Image">UPLOAD</button><button class="mini-btn reset-image" data-slot="b2Image">RESET</button></div></div></div>
+            </div>
+
+          <div class="profile-grid">
+            <article class="profile">
+              <div class="profile-name" contenteditable="true" data-bind="b1Name">B-01</div>
+              <div class="keyword-chips" data-keywords-view="b1Keywords"></div>
+              <div class="line-bubble" contenteditable="true" data-bind="b1Line">한 줄 대사를 입력하세요.</div>
+              <div class="profile-desc" contenteditable="true" data-bind="b1Desc">캐릭터 설명을 입력하세요.</div>
+            </article>
+            <article class="profile">
+              <div class="profile-name" contenteditable="true" data-bind="b2Name">B-02</div>
+              <div class="keyword-chips" data-keywords-view="b2Keywords"></div>
+              <div class="line-bubble" contenteditable="true" data-bind="b2Line">한 줄 대사를 입력하세요.</div>
+              <div class="profile-desc" contenteditable="true" data-bind="b2Desc">캐릭터 설명을 입력하세요.</div>
+            </article>
+          </div>
+        </section>
+
+      </section>
+    </div>
+  </div>
+
+  <section class="edit-dock">
+    <div class="dock-tabs">
+      <button class="tab active" data-panel="panelA">PAIR A</button>
+      <button class="tab" data-panel="panelChat">CHAT</button>
+      <button class="tab" data-panel="panelB">PAIR B</button>
+      <button class="tab" data-panel="panelVerdict">VERDICT</button>
+    </div>
+
+    <div class="dock-panel active" id="panelA">
+      <div class="form-grid">
+        <div class="form-card">
+          <h3>PAIR A / HEADER</h3>
+          <div class="upload-line"><button class="btn upload-trigger" data-slot="aHero">HEADER IMAGE</button><button class="btn reset-image" data-slot="aHero">RESET VIEW</button></div>
+          <div class="f"><label>PAIR TITLE</label><input data-input="aPairTitle"></div>
+          <div class="f"><label>PAIR QUOTE</label><textarea data-input="aPairQuote"></textarea></div>
+        </div>
+        <div class="form-card">
+          <h3>A-01</h3>
+          <div class="upload-line"><button class="btn upload-trigger" data-slot="a1Image">PORTRAIT</button><button class="btn reset-image" data-slot="a1Image">RESET VIEW</button></div>
+          <div class="f"><label>NAME</label><input data-input="a1Name"></div>
+          <div class="f"><label>KEYWORD</label><div class="keyword-editor"><input data-keyword-input="a1Keywords" placeholder="#키워드 추가"><button class="btn" data-keyword-add="a1Keywords">ADD</button></div><div class="keyword-list-editor" data-keywords-editor="a1Keywords"></div></div>
+          <div class="f"><label>ONE LINE</label><textarea data-input="a1Line"></textarea></div>
+          <div class="f"><label>DESCRIPTION</label><textarea data-input="a1Desc"></textarea></div>
+        </div>
+        <div class="form-card">
+          <h3>A-02</h3>
+          <div class="upload-line"><button class="btn upload-trigger" data-slot="a2Image">PORTRAIT</button><button class="btn reset-image" data-slot="a2Image">RESET VIEW</button></div>
+          <div class="f"><label>NAME</label><input data-input="a2Name"></div>
+          <div class="f"><label>KEYWORD</label><div class="keyword-editor"><input data-keyword-input="a2Keywords" placeholder="#키워드 추가"><button class="btn" data-keyword-add="a2Keywords">ADD</button></div><div class="keyword-list-editor" data-keywords-editor="a2Keywords"></div></div>
+          <div class="f"><label>ONE LINE</label><textarea data-input="a2Line"></textarea></div>
+          <div class="f"><label>DESCRIPTION</label><textarea data-input="a2Desc"></textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dock-panel" id="panelChat">
+      <div class="chat-maker">
+        <div class="f"><label>PROFILE</label><select id="chatSpeaker"><option value="a1">A-01</option><option value="a2">A-02</option><option value="b1">B-01</option><option value="b2">B-02</option></select></div>
+        <div class="f wide"><label>MESSAGE</label><textarea id="chatText" placeholder="상대에 대한 생각 / 대사를 입력"></textarea></div>
+        <button class="btn primary add" id="addChatBtn">+ MESSAGE</button>
+      </div>
+      <div class="chat-summary" id="chatSummary"></div>
+    </div>
+
+    <div class="dock-panel" id="panelB">
+      <div class="form-grid">
+        <div class="form-card">
+          <h3>PAIR B / HEADER</h3>
+          <div class="upload-line"><button class="btn upload-trigger" data-slot="bHero">HEADER IMAGE</button><button class="btn reset-image" data-slot="bHero">RESET VIEW</button></div>
+          <div class="f"><label>PAIR TITLE</label><input data-input="bPairTitle"></div>
+          <div class="f"><label>PAIR QUOTE</label><textarea data-input="bPairQuote"></textarea></div>
+        </div>
+        <div class="form-card">
+          <h3>B-01</h3>
+          <div class="upload-line"><button class="btn upload-trigger" data-slot="b1Image">PORTRAIT</button><button class="btn reset-image" data-slot="b1Image">RESET VIEW</button></div>
+          <div class="f"><label>NAME</label><input data-input="b1Name"></div>
+          <div class="f"><label>KEYWORD</label><div class="keyword-editor"><input data-keyword-input="b1Keywords" placeholder="#키워드 추가"><button class="btn" data-keyword-add="b1Keywords">ADD</button></div><div class="keyword-list-editor" data-keywords-editor="b1Keywords"></div></div>
+          <div class="f"><label>ONE LINE</label><textarea data-input="b1Line"></textarea></div>
+          <div class="f"><label>DESCRIPTION</label><textarea data-input="b1Desc"></textarea></div>
+        </div>
+        <div class="form-card">
+          <h3>B-02</h3>
+          <div class="upload-line"><button class="btn upload-trigger" data-slot="b2Image">PORTRAIT</button><button class="btn reset-image" data-slot="b2Image">RESET VIEW</button></div>
+          <div class="f"><label>NAME</label><input data-input="b2Name"></div>
+          <div class="f"><label>KEYWORD</label><div class="keyword-editor"><input data-keyword-input="b2Keywords" placeholder="#키워드 추가"><button class="btn" data-keyword-add="b2Keywords">ADD</button></div><div class="keyword-list-editor" data-keywords-editor="b2Keywords"></div></div>
+          <div class="f"><label>ONE LINE</label><textarea data-input="b2Line"></textarea></div>
+          <div class="f"><label>DESCRIPTION</label><textarea data-input="b2Desc"></textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dock-panel" id="panelVerdict">
+      <div class="verdict-editor-grid">
+        <div class="verdict-editor-card">
+          <div class="identity">PAIR A / 01</div>
+          <h3 data-verdict-editor-name="a1">A-01</h3>
+          <textarea data-verdict-input="a1" placeholder="상대 페어 관계에 대한 평가를 입력"></textarea>
+          <select data-verdict-select="a1">
+            <option value="">SELECT VERDICT</option>
+            <option value="dangerous">DANGEROUS</option>
+            <option value="stable">STABLE</option>
+            <option value="undefined">UNDEFINED</option>
+          </select>
+        </div>
+
+        <div class="verdict-editor-card">
+          <div class="identity">PAIR A / 02</div>
+          <h3 data-verdict-editor-name="a2">A-02</h3>
+          <textarea data-verdict-input="a2" placeholder="상대 페어 관계에 대한 평가를 입력"></textarea>
+          <select data-verdict-select="a2">
+            <option value="">SELECT VERDICT</option>
+            <option value="dangerous">DANGEROUS</option>
+            <option value="stable">STABLE</option>
+            <option value="undefined">UNDEFINED</option>
+          </select>
+        </div>
+
+        <div class="verdict-editor-card b">
+          <div class="identity">PAIR B / 01</div>
+          <h3 data-verdict-editor-name="b1">B-01</h3>
+          <textarea data-verdict-input="b1" placeholder="상대 페어 관계에 대한 평가를 입력"></textarea>
+          <select data-verdict-select="b1">
+            <option value="">SELECT VERDICT</option>
+            <option value="dangerous">DANGEROUS</option>
+            <option value="stable">STABLE</option>
+            <option value="undefined">UNDEFINED</option>
+          </select>
+        </div>
+
+        <div class="verdict-editor-card b">
+          <div class="identity">PAIR B / 02</div>
+          <h3 data-verdict-editor-name="b2">B-02</h3>
+          <textarea data-verdict-input="b2" placeholder="상대 페어 관계에 대한 평가를 입력"></textarea>
+          <select data-verdict-select="b2">
+            <option value="">SELECT VERDICT</option>
+            <option value="dangerous">DANGEROUS</option>
+            <option value="stable">STABLE</option>
+            <option value="undefined">UNDEFINED</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="verdict-file-note">
+        STAMP FILES /
+        <code>verdict_dangerous.png</code> ·
+        <code>verdict_stable.png</code> ·
+        <code>verdict_undefined.png</code>
+      </div>
+    </div>
+  </section>
+</main>
+
+<input id="filePicker" type="file" accept="image/*" hidden>
+<div class="toast" id="toast">DONE</div>
+
+<script>
+const board=document.getElementById('pairBoard');
+const previewWrap=document.getElementById('previewWrap');
+const previewSpacer=document.getElementById('previewSpacer');
+const filePicker=document.getElementById('filePicker');
+const toast=document.getElementById('toast');
+const BOARD_W=1800;
+
+const state={
+  text:{
+    aPairTitle:'PAIR A',aPairQuote:'“두 사람을 설명하는 한 문장.”',a1Name:'A-01',a1Line:'한 줄 대사를 입력하세요.',a1Desc:'캐릭터 설명을 입력하세요.',a2Name:'A-02',a2Line:'한 줄 대사를 입력하세요.',a2Desc:'캐릭터 설명을 입력하세요.',
+    bPairTitle:'PAIR B',bPairQuote:'“두 사람을 설명하는 한 문장.”',b1Name:'B-01',b1Line:'한 줄 대사를 입력하세요.',b1Desc:'캐릭터 설명을 입력하세요.',b2Name:'B-02',b2Line:'한 줄 대사를 입력하세요.',b2Desc:'캐릭터 설명을 입력하세요.'
+  },
+  keywords:{a1Keywords:['#KEYWORD'],a2Keywords:['#KEYWORD'],b1Keywords:['#KEYWORD'],b2Keywords:['#KEYWORD']},
+  images:{},
+  messages:[
+    {speaker:'a1',side:'left',text:'서로의 페어에 대한'},
+    {speaker:'b1',side:'right',text:'대화를 적을 수 있습니다.'},
+    {speaker:'a2',side:'left',text:'CHAT 탭에서'},
+    {speaker:'b2',side:'right',text:'조정해주세요.'}
+  ],
+  verdicts:{
+    a1:{text:'상대 페어 관계에 대한 평가를 입력하세요.',type:''},
+    a2:{text:'상대 페어 관계에 대한 평가를 입력하세요.',type:''},
+    b1:{text:'상대 페어 관계에 대한 평가를 입력하세요.',type:''},
+    b2:{text:'상대 페어 관계에 대한 평가를 입력하세요.',type:''}
+  }
+};
+['aHero','a1Image','a2Image','bHero','b1Image','b2Image'].forEach(k=>state.images[k]={src:'',x:0,y:0,zoom:1});
+let activeUploadSlot=null;
+
+function notify(t){toast.textContent=t;toast.classList.add('on');clearTimeout(notify.t);notify.t=setTimeout(()=>toast.classList.remove('on'),1600)}
+
+function resizePreview(){
+  const available=Math.max(1,previewWrap.clientWidth-2);
+  const scale=Math.min(1,available/BOARD_W);
+
+  // Keep the preview frame fixed to the viewport.
+  // Only the 1800px pair board is scaled; its layout container never becomes 1800px wide.
+  previewSpacer.style.transform='none';
+  previewSpacer.style.width='100%';
+  board.style.left='0px';
+  board.style.top='0px';
+  board.style.transformOrigin='top left';
+  board.style.transform=`scale(${scale})`;
+
+  previewSpacer.style.height=Math.ceil(board.offsetHeight*scale)+'px';
+
+  // Mobile browsers can remember a previous horizontal scroll position.
+  // Force the preview back to the fixed left edge every time it is laid out.
+  previewWrap.scrollLeft=0;
+}
+window.addEventListener('resize',()=>requestAnimationFrame(resizePreview));
+window.addEventListener('orientationchange',()=>setTimeout(resizePreview,80));
+setTimeout(resizePreview,50);
+
+function bindText(){
+  document.querySelectorAll('[data-bind]').forEach(el=>{
+    const key=el.dataset.bind;
+    el.textContent=state.text[key] ?? el.textContent;
+    el.addEventListener('input',()=>{
+      state.text[key]=el.textContent;
+      document.querySelectorAll(`[data-input="${key}"]`).forEach(input=>{ if(document.activeElement!==input) input.value=state.text[key]; });
+      renderChat();
+      renderVerdicts();
+    });
+  });
+  document.querySelectorAll('[data-input]').forEach(input=>{
+    const key=input.dataset.input;
+    input.value=state.text[key] ?? '';
+    input.addEventListener('input',()=>{
+      state.text[key]=input.value;
+      const bound=document.querySelector(`[data-bind="${key}"]`);
+      if(bound) bound.textContent=input.value;
+      renderChat();
+      renderVerdicts();
+    });
+  });
+}
+bindText();
+
+document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b===btn));
+  document.querySelectorAll('.dock-panel').forEach(p=>p.classList.toggle('active',p.id===btn.dataset.panel));
+}));
+
+
+const VERDICT_STAMPS={
+  dangerous:'images/verdict_dangerous.png',
+  stable:'images/verdict_stable.png',
+  undefined:'images/verdict_undefined.png'
+};
+
+function verdictName(id){
+  const map={a1:'a1Name',a2:'a2Name',b1:'b1Name',b2:'b2Name'};
+  return state.text[map[id]] || id.toUpperCase();
+}
+
+function renderVerdicts(){
+  ['a1','a2','b1','b2'].forEach(id=>{
+    if(!state.verdicts[id]) state.verdicts[id]={text:'상대 페어 관계에 대한 평가를 입력하세요.',type:''};
+    const item=state.verdicts[id];
+    const name=verdictName(id);
+
+    document.querySelectorAll(`[data-verdict-name="${id}"]`).forEach(el=>el.textContent=name);
+    document.querySelectorAll(`[data-verdict-editor-name="${id}"]`).forEach(el=>el.textContent=name);
+    document.querySelectorAll(`[data-verdict-copy="${id}"]`).forEach(el=>el.textContent=item.text || '상대 페어 관계에 대한 평가를 입력하세요.');
+
+    document.querySelectorAll(`[data-verdict-input="${id}"]`).forEach(el=>{
+      if(document.activeElement!==el) el.value=item.text || '';
+    });
+    document.querySelectorAll(`[data-verdict-select="${id}"]`).forEach(el=>{
+      if(document.activeElement!==el) el.value=item.type || '';
+    });
+
+    const wrap=document.querySelector(`[data-verdict-wrap="${id}"]`);
+    const img=document.querySelector(`[data-verdict-stamp="${id}"]`);
+    if(!wrap || !img) return;
+
+    wrap.classList.remove('has-stamp','missing');
+    wrap.removeAttribute('data-filename');
+    img.removeAttribute('src');
+    img.alt='';
+
+    if(item.type && VERDICT_STAMPS[item.type]){
+      const filename=VERDICT_STAMPS[item.type];
+      wrap.dataset.filename=filename;
+      wrap.classList.add('has-stamp');
+      img.alt=item.type.toUpperCase();
+      img.onload=()=>{wrap.classList.remove('missing');wrap.classList.add('has-stamp');};
+      img.onerror=()=>{wrap.classList.remove('has-stamp');wrap.classList.add('missing');};
+      img.src=filename;
+    }
+  });
+  resizePreview();
+}
+
+document.querySelectorAll('[data-verdict-input]').forEach(el=>{
+  el.addEventListener('input',()=>{
+    const id=el.dataset.verdictInput;
+    if(!state.verdicts[id]) state.verdicts[id]={text:'',type:''};
+    state.verdicts[id].text=el.value;
+    renderVerdicts();
+  });
+});
+
+document.querySelectorAll('[data-verdict-select]').forEach(el=>{
+  el.addEventListener('change',()=>{
+    const id=el.dataset.verdictSelect;
+    if(!state.verdicts[id]) state.verdicts[id]={text:'',type:''};
+    state.verdicts[id].type=el.value;
+    renderVerdicts();
+  });
+});
+
+
+function renderKeywords(key){
+  const arr=state.keywords[key]||[];
+  document.querySelectorAll(`[data-keywords-view="${key}"]`).forEach(box=>{
+    box.innerHTML=arr.map(word=>`<span class="keyword-chip">${escapeHtml(word)}</span>`).join('');
+  });
+  document.querySelectorAll(`[data-keywords-editor="${key}"]`).forEach(box=>{
+    box.innerHTML='';
+    arr.forEach((word,idx)=>{
+      const item=document.createElement('span');
+      item.className='keyword-pill-editor';
+      item.innerHTML=`<span>${escapeHtml(word)}</span><button type="button">×</button>`;
+      item.querySelector('button').onclick=()=>{ state.keywords[key].splice(idx,1); renderKeywords(key); };
+      box.appendChild(item);
+    });
+  });
+}
+Object.keys(state.keywords).forEach(renderKeywords);
+document.querySelectorAll('[data-keyword-add]').forEach(btn=>btn.addEventListener('click',()=>addKeyword(btn.dataset.keywordAdd)));
+document.querySelectorAll('[data-keyword-input]').forEach(input=>input.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); addKeyword(input.dataset.keywordInput); }}));
+function addKeyword(key){
+  const input=document.querySelector(`[data-keyword-input="${key}"]`);
+  if(!input) return;
+  let value=input.value.trim();
+  if(!value) return;
+  if(!value.startsWith('#')) value='#'+value;
+  state.keywords[key].push(value);
+  input.value='';
+  renderKeywords(key);
+}
+
+function getSlotEl(key){ return document.querySelector(`.image-slot[data-slot="${key}"]`); }
+function positionImage(key){
+  const data=state.images[key]; const slot=getSlotEl(key); const img=slot?.querySelector('img');
+  if(!slot || !img || !img.naturalWidth || !img.naturalHeight) return;
+  const base=Math.max(slot.clientWidth/img.naturalWidth, slot.clientHeight/img.naturalHeight);
+  const scale=base*data.zoom;
+  img.style.transform=`translate(-50%,-50%) translate(${data.x}px,${data.y}px) scale(${scale})`;
+}
+function applyImage(key){
+  const data=state.images[key]; const slot=getSlotEl(key); const img=slot?.querySelector('img');
+  if(!slot || !img) return;
+  if(!data.src){ img.removeAttribute('src'); slot.classList.add('empty'); return; }
+  slot.classList.remove('empty');
+  img.onload=()=>positionImage(key);
+  img.src=data.src;
+}
+function resetImageView(key){ if(!state.images[key]) return; state.images[key].x=0; state.images[key].y=0; state.images[key].zoom=1; positionImage(key); }
+Object.keys(state.images).forEach(applyImage);
+
+document.querySelectorAll('.upload-trigger').forEach(btn=>btn.addEventListener('click',e=>{ e.stopPropagation(); activeUploadSlot=btn.dataset.slot; filePicker.value=''; filePicker.click(); }));
+document.querySelectorAll('.reset-image').forEach(btn=>btn.addEventListener('click',e=>{ e.stopPropagation(); resetImageView(btn.dataset.slot); }));
+filePicker.addEventListener('change',()=>{
+  const file=filePicker.files?.[0];
+  if(!file || !activeUploadSlot) return;
+  const reader=new FileReader();
+  reader.onload=()=>{ state.images[activeUploadSlot]={src:reader.result,x:0,y:0,zoom:1}; applyImage(activeUploadSlot); renderChat(); };
+  reader.readAsDataURL(file);
+});
+
+const pointerMaps=new Map();
+Object.keys(state.images).forEach(key=>pointerMaps.set(key,new Map()));
+document.querySelectorAll('.image-slot').forEach(slot=>{
+  const key=slot.dataset.slot; if(!key) return;
+  slot.addEventListener('wheel',e=>{
+    if(!state.images[key]?.src) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const factor=e.deltaY<0?1.08:0.92;
+    state.images[key].zoom=Math.max(.45,Math.min(6,state.images[key].zoom*factor));
+    positionImage(key);
+  },{passive:false});
+  slot.addEventListener('dblclick',()=>resetImageView(key));
+  slot.addEventListener('pointerdown',e=>{
+    if(e.target.closest('button') || !state.images[key]?.src) return;
+    e.preventDefault();
+    e.stopPropagation();
+    slot.setPointerCapture?.(e.pointerId);
+    const m=pointerMaps.get(key); m.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(m.size===2){ const pts=[...m.values()]; slot._pinchDist=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y); slot._pinchZoom=state.images[key].zoom; }
+  });
+  slot.addEventListener('pointermove',e=>{
+    e.stopPropagation();
+    const m=pointerMaps.get(key); if(!m.has(e.pointerId)) return;
+    const prev=m.get(e.pointerId); m.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    const ratio=slot.getBoundingClientRect().width/slot.offsetWidth || 1;
+    if(m.size===1){
+      state.images[key].x+=(e.clientX-prev.x)/ratio;
+      state.images[key].y+=(e.clientY-prev.y)/ratio;
+    }else if(m.size>=2){
+      const pts=[...m.values()].slice(0,2); const dist=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
+      if(slot._pinchDist){ state.images[key].zoom=Math.max(.45,Math.min(6,slot._pinchZoom*(dist/slot._pinchDist))); }
+    }
+    positionImage(key);
+  });
+  const end=e=>{ const m=pointerMaps.get(key); m.delete(e.pointerId); if(m.size<2){ slot._pinchDist=null; slot._pinchZoom=null; } };
+  slot.addEventListener('pointerup',end); slot.addEventListener('pointercancel',end);
+});
+
+function speakerMeta(id){
+  const map={a1:{name:state.text.a1Name,img:state.images.a1Image.src},a2:{name:state.text.a2Name,img:state.images.a2Image.src},b1:{name:state.text.b1Name,img:state.images.b1Image.src},b2:{name:state.text.b2Name,img:state.images.b2Image.src}};
+  return map[id] || {name:id.toUpperCase(),img:''};
+}
+function renderChat(){
+  const list=document.getElementById('chatList'); list.innerHTML='';
+  state.messages.forEach((msg,index)=>{
+    const meta=speakerMeta(msg.speaker); const autoSide=String(msg.speaker).startsWith('b')?'right':'left'; const row=document.createElement('div'); row.className='msg '+autoSide;
+    const avatar=document.createElement('div'); avatar.className='avatar';
+    if(meta.img){ const im=document.createElement('img'); im.src=meta.img; avatar.appendChild(im); }
+    else{ const fb=document.createElement('div'); fb.className='avatar-fallback'; fb.textContent=(meta.name||'?').slice(0,1); avatar.appendChild(fb); }
+    const wrap=document.createElement('div');
+    const bubble=document.createElement('div'); bubble.className='bubble'; bubble.textContent=msg.text; wrap.appendChild(bubble);
+    const ctr=document.createElement('div'); ctr.className='msg-controls';
+    const up=document.createElement('button'); up.textContent='↑'; up.onclick=()=>moveMessage(index,-1);
+    const down=document.createElement('button'); down.textContent='↓'; down.onclick=()=>moveMessage(index,1);
+    const del=document.createElement('button'); del.textContent='DEL'; del.onclick=()=>{ state.messages.splice(index,1); renderChat(); };
+    ctr.append(up,down,del); wrap.appendChild(ctr); row.append(avatar,wrap); list.appendChild(row);
+  });
+  renderChatSummary();
+}
+function renderChatSummary(){
+  const box=document.getElementById('chatSummary'); box.innerHTML='';
+  state.messages.forEach((msg,index)=>{
+    const meta=speakerMeta(msg.speaker); const row=document.createElement('div'); row.className='chat-summary-row';
+    const autoSide=String(msg.speaker).startsWith('b')?'RIGHT':'LEFT'; row.innerHTML=`<span>${escapeHtml(meta.name)}</span><span>${autoSide}</span><span>${escapeHtml(msg.text.slice(0,90))}</span>`;
+    const del=document.createElement('button'); del.textContent='DEL'; del.onclick=()=>{ state.messages.splice(index,1); renderChat(); };
+    row.appendChild(del); box.appendChild(row);
+  });
+}
+function moveMessage(index,delta){ const next=index+delta; if(next<0||next>=state.messages.length) return; [state.messages[index],state.messages[next]]=[state.messages[next],state.messages[index]]; renderChat(); }
+document.getElementById('addChatBtn').addEventListener('click',()=>{
+  const text=document.getElementById('chatText').value.trim(); if(!text) return;
+  const speaker=document.getElementById('chatSpeaker').value; state.messages.push({speaker, side:String(speaker).startsWith('b')?'right':'left', text});
+  document.getElementById('chatText').value=''; renderChat();
+});
+renderChat();
+renderVerdicts();
+
+function snapshot(){
+  document.querySelectorAll('[data-bind]').forEach(el=>state.text[el.dataset.bind]=el.textContent);
+  return JSON.parse(JSON.stringify(state));
+}
+function applySnapshot(data){
+  if(!data) return;
+  state.text=data.text||state.text;
+  state.keywords=data.keywords||state.keywords;
+  state.images=data.images||state.images;
+  state.messages=data.messages||state.messages;
+  state.verdicts=data.verdicts||state.verdicts;
+  state.messages.forEach(m=>{m.side=String(m.speaker).startsWith('b')?'right':'left';});
+  Object.keys(state.text).forEach(k=>{ const el=document.querySelector(`[data-bind="${k}"]`); if(el) el.textContent=state.text[k]; const input=document.querySelector(`[data-input="${k}"]`); if(input) input.value=state.text[k]; });
+  Object.keys(state.keywords).forEach(renderKeywords);
+  Object.keys(state.images).forEach(k=>{ if(!state.images[k]) state.images[k]={src:'',x:0,y:0,zoom:1}; applyImage(k); });
+  renderChat(); renderVerdicts(); resizePreview();
+}
+
+function openDB(){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open('parusiaPairMakerV2',1);
+    req.onupgradeneeded=()=>{ if(!req.result.objectStoreNames.contains('projects')) req.result.createObjectStore('projects'); };
+    req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error);
+  });
+}
+async function saveProject(){
+  const db=await openDB();
+  await new Promise((resolve,reject)=>{ const tx=db.transaction('projects','readwrite'); tx.objectStore('projects').put(snapshot(),'default'); tx.oncomplete=resolve; tx.onerror=()=>reject(tx.error); });
+  db.close(); notify('LOCAL SAVE COMPLETE');
+}
+async function loadProject(){
+  const db=await openDB();
+  const data=await new Promise((resolve,reject)=>{ const tx=db.transaction('projects','readonly'); const req=tx.objectStore('projects').get('default'); req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error); });
+  db.close();
+  if(data){ applySnapshot(data); notify('LOCAL DATA LOADED'); } else notify('NO SAVED DATA');
+}
+document.getElementById('saveBtn').onclick=()=>saveProject().catch(e=>{ console.error(e); notify('SAVE FAILED'); });
+document.getElementById('loadBtn').onclick=()=>loadProject().catch(e=>{ console.error(e); notify('LOAD FAILED'); });
+document.getElementById('resetBtn').onclick=()=>{ if(confirm('현재 편집 내용을 초기화할까요?')) location.reload(); };
+
+
+const OOC_TEMPLATE="[OOC: 이전 롤플레잉 중지. AI가 직접 답변한다.\n이전 대화, 캐릭터 설정, 로어북, 관계 및 사건 기록을 참고하여 NPC와 PC의 관계를 아래 양식에 맞춰 작성한다. 필요한 경우 {{char}}와 {{user}}의 생각·평가를 관계와 성격에 맞게 자연스럽게 추론하여 작성해도 된다.\nchar_1 프로필\n이름(코드네임): \n성별: \n나이: \n소속: \n외형: \n기타:\nchar_2 프로필\n이름(코드네임): \n성별: \n나이: \n소속: \n외형: \n기타:\nRELATIONSHIP VERDICT\n{{char}}가 생각하는 두 사람의 관계에 대한 평가문:\n• 짧은 1~3문장\n• {{char}}의 성격과 관점이 드러나도록 작성\n{{char}}의 관계 판정: DANGEROUS / STABLE / UNDEFINED 중 하나 선택\n{{user}}가 생각하는 두 사람의 관계에 대한 평가문:\n• 짧은 1~3문장\n• {{user}}의 성격과 관점이 드러나도록 작성\n{{user}}의 관계 판정: DANGEROUS / STABLE / UNDEFINED 중 하나 선택\nCROSS MESSAGE\n{{char}}와 {{user}}가 char_1, char_2 또는 두 사람의 관계를 보며 나누는 짧은 대화 1~3개. 자연스러운 구어체로 작성하며 각 대사 앞에 화자를 표시한다.\n{{char}}: {{user}}: …]";
+
+async function copyOOC(){
+  try{
+    if(navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(OOC_TEMPLATE);
+    }else{
+      const ta=document.createElement('textarea');
+      ta.value=OOC_TEMPLATE;
+      ta.setAttribute('readonly','');
+      ta.style.position='fixed';
+      ta.style.left='-9999px';
+      ta.style.top='0';
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, ta.value.length);
+      const ok=document.execCommand('copy');
+      ta.remove();
+      if(!ok) throw new Error('COPY COMMAND FAILED');
+    }
+    notify('OOC COPIED');
+  }catch(err){
+    console.error(err);
+    notify('OOC COPY FAILED');
+  }
+}
+
+document.getElementById('oocCopyBtn').addEventListener('click',copyOOC);
+
+async function exportBoard(){
+  if(!window.html2canvas){
+    notify('EXPORT LIBRARY ERROR');
+    return;
+  }
+
+  notify('RENDERING PNG...');
+
+  // Capture the ACTUAL board instead of a cloned board.
+  // Cloning was recalculating absolute/transformed verdict/profile positions.
+  const oldBoardTransform = board.style.transform;
+  const oldBoardPosition = board.style.position;
+  const oldBoardLeft = board.style.left;
+  const oldBoardTop = board.style.top;
+  const oldBoardWidth = board.style.width;
+  const oldSpacerHeight = previewSpacer.style.height;
+  const oldSpacerWidth = previewSpacer.style.width;
+  const oldSpacerOverflow = previewSpacer.style.overflow;
+  const oldWrapOverflow = previewWrap.style.overflow;
+
+  document.body.classList.add('exporting');
+
+  try{
+    // Temporarily restore the board to its native 1800px coordinate system.
+    board.style.transform = 'none';
+    board.style.position = 'relative';
+    board.style.left = '0';
+    board.style.top = '0';
+    board.style.width = BOARD_W + 'px';
+
+    previewSpacer.style.width = BOARD_W + 'px';
+    previewSpacer.style.height = board.scrollHeight + 'px';
+    previewSpacer.style.overflow = 'visible';
+    previewWrap.style.overflow = 'visible';
+
+    // Give browser two frames to fully recompute absolute positions and image transforms.
+    await new Promise(resolve =>
+      requestAnimationFrame(() =>
+        requestAnimationFrame(resolve)
+      )
+    );
+
+    const exportHeight = Math.max(board.scrollHeight, board.offsetHeight);
+
+    const canvas = await html2canvas(board,{
+      backgroundColor:'#080808',
+      scale:2,
+      useCORS:true,
+      allowTaint:false,
+      logging:false,
+      width:BOARD_W,
+      height:exportHeight,
+      windowWidth:BOARD_W,
+      windowHeight:exportHeight,
+      scrollX:0,
+      scrollY:0
+    });
+
+    const a=document.createElement('a');
+    a.download=`PARUSIA_PAIR_TO_PAIR_${new Date().toISOString().slice(0,10)}.png`;
+    a.href=canvas.toDataURL('image/png');
+    a.click();
+
+    notify('PNG EXPORTED');
+  }catch(err){
+    console.error(err);
+    notify('EXPORT FAILED');
+  }finally{
+    // Restore the live preview exactly as it was.
+    board.style.transform = oldBoardTransform;
+    board.style.position = oldBoardPosition;
+    board.style.left = oldBoardLeft;
+    board.style.top = oldBoardTop;
+    board.style.width = oldBoardWidth;
+
+    previewSpacer.style.height = oldSpacerHeight;
+    previewSpacer.style.width = oldSpacerWidth;
+    previewSpacer.style.overflow = oldSpacerOverflow;
+    previewWrap.style.overflow = oldWrapOverflow;
+
+    document.body.classList.remove('exporting');
+    resizePreview();
+  }
+}
+document.getElementById('exportBtn').onclick=exportBoard;
+
+function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+setTimeout(()=>{ Object.keys(state.images).forEach(positionImage); resizePreview(); },120);
+</script>
+</body>
+</html>
