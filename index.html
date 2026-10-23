@@ -1118,6 +1118,132 @@ body.exporting [contenteditable="true"]{outline:none!important;}
 }
 </style>
 
+
+<style id="latest-user-layout-fix">
+/* =========================================================
+   1) PROFILE SPACING
+   A02 / B01 had been pulled too far inward. Give the two
+   profiles on each side breathing room again.
+   ========================================================= */
+.side-a .profile-grid > .profile:nth-child(2){
+  left:-78px!important;
+}
+.side-b .profile-grid > .profile:nth-child(1){
+  left:78px!important;
+}
+
+/* Keep long profile text within its own profile lane. */
+.profile-grid{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:28px!important;
+}
+.profile{
+  min-width:0!important;
+}
+.line-bubble,
+.profile-desc{
+  max-width:235px!important;
+  box-sizing:border-box!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+}
+.side-a .profile-grid > .profile:nth-child(1) .line-bubble,
+.side-a .profile-grid > .profile:nth-child(1) .profile-desc,
+.side-a .profile-grid > .profile:nth-child(2) .line-bubble,
+.side-a .profile-grid > .profile:nth-child(2) .profile-desc{
+  margin-left:0!important;
+  margin-right:auto!important;
+}
+.side-b .profile-grid > .profile:nth-child(1) .line-bubble,
+.side-b .profile-grid > .profile:nth-child(1) .profile-desc,
+.side-b .profile-grid > .profile:nth-child(2) .line-bubble,
+.side-b .profile-grid > .profile:nth-child(2) .profile-desc{
+  margin-left:auto!important;
+  margin-right:0!important;
+}
+
+/* =========================================================
+   2) CROSS MESSAGE
+   Use a wide central message field (the white-marked area).
+   A messages anchor to the left wall, B messages to the right.
+   ========================================================= */
+.chat-list{
+  width:820px!important;
+  max-width:none!important;
+  margin-left:-210px!important;
+  margin-right:0!important;
+  padding:24px 22px 18px!important;
+  box-sizing:border-box!important;
+  overflow:visible!important;
+  align-self:flex-start!important;
+}
+.chat-list .msg{
+  width:100%!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+  display:flex!important;
+}
+.chat-list .msg.left{
+  justify-content:flex-start!important;
+}
+.chat-list .msg.right{
+  justify-content:flex-start!important;
+  flex-direction:row-reverse!important;
+}
+.chat-list .bubble{
+  max-width:410px!important;
+  width:fit-content!important;
+  box-sizing:border-box!important;
+  white-space:pre-wrap!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+}
+.chat-list .msg.left .msg-controls{
+  justify-content:flex-start!important;
+}
+.chat-list .msg.right .msg-controls{
+  justify-content:flex-end!important;
+}
+
+/* =========================================================
+   3) HERO HEADER
+   Title and catchphrase almost touch.
+   ========================================================= */
+.pair-title{
+  top:62px!important;
+}
+.pair-quote{
+  top:116px!important;
+  line-height:1.35!important;
+}
+
+/* =========================================================
+   4) HERO UPLOAD / RESET
+   Both header controls: top-center, always above gradient,
+   and high enough to stay out of the title/catchphrase block.
+   Portrait controls are untouched.
+   ========================================================= */
+.side-a .hero-image > .slot-tools,
+.side-b .hero-image > .slot-tools{
+  left:50%!important;
+  right:auto!important;
+  top:8px!important;
+  transform:translateX(-50%)!important;
+  z-index:25!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+.hero-image:after{
+  z-index:2!important;
+  pointer-events:none!important;
+}
+.hero-image .pair-title,
+.hero-image .pair-quote,
+.hero-image .hero-head{
+  z-index:6!important;
+}
+</style>
+
 </head>
 <body>
 <header class="topbar">
